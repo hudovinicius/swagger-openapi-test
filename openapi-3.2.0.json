@@ -1,6 +1,6 @@
 {
   "openapi": "3.2.0",
-  "$self": "#",
+  "$self": "https://manual.example.test/specs/openapi-3.2.0",
   "info": {
     "title": "Manual import matrix - OpenAPI 3.2.0",
     "version": "3.2.0",
@@ -13,9 +13,7 @@
   ],
   "security": [
     {
-      "ApiKeyHeader": [
-
-      ]
+      "ApiKeyHeader": []
     }
   ],
   "paths": {
@@ -98,14 +96,10 @@
         ],
         "security": [
           {
-            "ApiKeyHeader": [
-
-            ]
+            "ApiKeyHeader": []
           },
           {
-            "BearerAuth": [
-
-            ]
+            "BearerAuth": []
           }
         ],
         "responses": {
@@ -169,9 +163,7 @@
         },
         "security": [
           {
-            "ApiKeyHeader": [
-
-            ],
+            "ApiKeyHeader": [],
             "OAuth2": [
               "items:write"
             ]
@@ -225,9 +217,7 @@
         },
         "security": [
           {
-            "ApiKeyQuery": [
-
-            ]
+            "ApiKeyQuery": []
           }
         ],
         "responses": {
@@ -264,8 +254,7 @@
                     "maxLength": 120
                   },
                   "file": {
-                    "type": "string",
-                    "format": "binary"
+                    "description": "Raw PDF part; its media type is defined by the Encoding Object."
                   }
                 }
               },
@@ -286,9 +275,7 @@
         },
         "security": [
           {
-            "ApiKeyCookie": [
-
-            ]
+            "ApiKeyCookie": []
           }
         ],
         "responses": {
@@ -296,10 +283,7 @@
             "description": "Binary patch receipt",
             "content": {
               "application/octet-stream": {
-                "schema": {
-                  "type": "string",
-                  "format": "binary"
-                }
+                "schema": {}
               }
             }
           }
@@ -311,9 +295,7 @@
         ],
         "operationId": "deleteManualItem",
         "summary": "Public operation with no response body",
-        "security": [
-
-        ],
+        "security": [],
         "responses": {
           "204": {
             "description": "Deleted"
@@ -328,9 +310,7 @@
         "summary": "Wildcard success response containing only headers",
         "security": [
           {
-            "BearerAuth": [
-
-            ]
+            "BearerAuth": []
           }
         ],
         "responses": {
@@ -370,8 +350,7 @@
             "description": "Supported capabilities",
             "content": {
               "application/json": {
-                "schema": {
-                }
+                "schema": {}
               }
             }
           }
@@ -538,6 +517,70 @@
                   "type": "string"
                 }
               },
+              "stringValues": {
+                "type": "array",
+                "examples": [
+                  [
+                    "alpha",
+                    "beta"
+                  ]
+                ],
+                "items": {
+                  "type": "string"
+                }
+              },
+              "longValues": {
+                "type": "array",
+                "examples": [
+                  [
+                    1,
+                    9223372036854775807
+                  ]
+                ],
+                "items": {
+                  "type": "integer",
+                  "format": "int64"
+                }
+              },
+              "doubleValues": {
+                "type": "array",
+                "examples": [
+                  [
+                    10.5,
+                    99.99
+                  ]
+                ],
+                "items": {
+                  "type": "number",
+                  "format": "double"
+                }
+              },
+              "objectValues": {
+                "type": "array",
+                "examples": [
+                  [
+                    {
+                      "code": "simple",
+                      "active": true
+                    }
+                  ]
+                ],
+                "items": {
+                  "type": "object",
+                  "required": [
+                    "code",
+                    "active"
+                  ],
+                  "properties": {
+                    "code": {
+                      "type": "string"
+                    },
+                    "active": {
+                      "type": "boolean"
+                    }
+                  }
+                }
+              },
               "nestedItems": {
                 "type": "array",
                 "items": {
@@ -547,8 +590,7 @@
                   }
                 }
               },
-              "freeForm": {
-              },
+              "freeForm": {},
               "secret": {
                 "type": "string",
                 "format": "password",
@@ -556,6 +598,25 @@
               }
             },
             "oneOf": [
+              {
+                "properties": {
+                  "kind": {
+                    "const": "standard"
+                  }
+                }
+              },
+              {
+                "properties": {
+                  "kind": {
+                    "const": "special"
+                  },
+                  "priority": {
+                    "type": "integer"
+                  }
+                }
+              }
+            ],
+            "anyOf": [
               {
                 "required": [
                   "tags"
@@ -567,29 +628,42 @@
                 ]
               }
             ],
-            "anyOf": [
-              {
-                "properties": {
-                  "kind": {
-                    "enum": [
-                      "standard"
-                    ]
-                  }
-                }
-              },
-              {
-                "properties": {
-                  "kind": {
-                    "enum": [
-                      "special"
-                    ]
-                  }
-                }
-              }
-            ],
             "not": {
               "required": [
                 "forbidden"
+              ]
+            },
+            "if": {
+              "properties": {
+                "kind": {
+                  "const": "special"
+                }
+              }
+            },
+            "then": {
+              "required": [
+                "priority"
+              ]
+            },
+            "else": {
+              "properties": {
+                "priority": {
+                  "maximum": 0
+                }
+              }
+            },
+            "dependentSchemas": {
+              "priority": {
+                "properties": {
+                  "reviewed": {
+                    "type": "boolean"
+                  }
+                }
+              }
+            },
+            "dependentRequired": {
+              "priority": [
+                "kind"
               ]
             },
             "discriminator": {

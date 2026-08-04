@@ -12,9 +12,7 @@
   ],
   "security": [
     {
-      "ApiKeyHeader": [
-
-      ]
+      "ApiKeyHeader": []
     }
   ],
   "paths": {
@@ -97,14 +95,10 @@
         ],
         "security": [
           {
-            "ApiKeyHeader": [
-
-            ]
+            "ApiKeyHeader": []
           },
           {
-            "BearerAuth": [
-
-            ]
+            "BearerAuth": []
           }
         ],
         "responses": {
@@ -171,9 +165,7 @@
         },
         "security": [
           {
-            "ApiKeyHeader": [
-
-            ],
+            "ApiKeyHeader": [],
             "OAuth2": [
               "items:write"
             ]
@@ -227,9 +219,7 @@
         },
         "security": [
           {
-            "ApiKeyQuery": [
-
-            ]
+            "ApiKeyQuery": []
           }
         ],
         "responses": {
@@ -288,9 +278,7 @@
         },
         "security": [
           {
-            "ApiKeyCookie": [
-
-            ]
+            "ApiKeyCookie": []
           }
         ],
         "responses": {
@@ -313,9 +301,7 @@
         ],
         "operationId": "deleteManualItem",
         "summary": "Public operation with no response body",
-        "security": [
-
-        ],
+        "security": [],
         "responses": {
           "204": {
             "description": "Deleted"
@@ -330,9 +316,7 @@
         "summary": "Wildcard success response containing only headers",
         "security": [
           {
-            "BearerAuth": [
-
-            ]
+            "BearerAuth": []
           }
         ],
         "responses": {
@@ -372,8 +356,7 @@
             "description": "Supported capabilities",
             "content": {
               "application/json": {
-                "schema": {
-                }
+                "schema": {}
               }
             }
           }
@@ -538,6 +521,62 @@
                   "type": "string"
                 }
               },
+              "stringValues": {
+                "type": "array",
+                "example": [
+                  "alpha",
+                  "beta"
+                ],
+                "items": {
+                  "type": "string"
+                }
+              },
+              "longValues": {
+                "type": "array",
+                "example": [
+                  1,
+                  9223372036854775807
+                ],
+                "items": {
+                  "type": "integer",
+                  "format": "int64"
+                }
+              },
+              "doubleValues": {
+                "type": "array",
+                "example": [
+                  10.5,
+                  99.99
+                ],
+                "items": {
+                  "type": "number",
+                  "format": "double"
+                }
+              },
+              "objectValues": {
+                "type": "array",
+                "example": [
+                  {
+                    "code": "simple",
+                    "active": true
+                  }
+                ],
+                "items": {
+                  "type": "object",
+                  "required": [
+                    "code",
+                    "active"
+                  ],
+                  "properties": {
+                    "code": {
+                      "type": "string"
+                    },
+                    "active": {
+                      "type": "boolean"
+                    }
+                  }
+                }
+              },
               "nestedItems": {
                 "type": "array",
                 "items": {
@@ -547,8 +586,7 @@
                   }
                 }
               },
-              "freeForm": {
-              },
+              "freeForm": {},
               "secret": {
                 "type": "string",
                 "format": "password",

@@ -12,9 +12,7 @@
   ],
   "security": [
     {
-      "ApiKeyHeader": [
-
-      ]
+      "ApiKeyHeader": []
     }
   ],
   "paths": {
@@ -97,14 +95,10 @@
         ],
         "security": [
           {
-            "ApiKeyHeader": [
-
-            ]
+            "ApiKeyHeader": []
           },
           {
-            "BearerAuth": [
-
-            ]
+            "BearerAuth": []
           }
         ],
         "responses": {
@@ -171,9 +165,7 @@
         },
         "security": [
           {
-            "ApiKeyHeader": [
-
-            ],
+            "ApiKeyHeader": [],
             "OAuth2": [
               "items:write"
             ]
@@ -227,9 +219,7 @@
         },
         "security": [
           {
-            "ApiKeyQuery": [
-
-            ]
+            "ApiKeyQuery": []
           }
         ],
         "responses": {
@@ -266,9 +256,7 @@
                     "maxLength": 120
                   },
                   "file": {
-                    "type": "string",
-                    "contentEncoding": "base64",
-                    "contentMediaType": "application/pdf"
+                    "description": "Raw PDF part; its media type is defined by the Encoding Object."
                   }
                 }
               },
@@ -289,9 +277,7 @@
         },
         "security": [
           {
-            "ApiKeyCookie": [
-
-            ]
+            "ApiKeyCookie": []
           }
         ],
         "responses": {
@@ -299,10 +285,7 @@
             "description": "Binary patch receipt",
             "content": {
               "application/octet-stream": {
-                "schema": {
-                  "type": "string",
-                  "format": "binary"
-                }
+                "schema": {}
               }
             }
           }
@@ -314,9 +297,7 @@
         ],
         "operationId": "deleteManualItem",
         "summary": "Public operation with no response body",
-        "security": [
-
-        ],
+        "security": [],
         "responses": {
           "204": {
             "description": "Deleted"
@@ -331,9 +312,7 @@
         "summary": "Wildcard success response containing only headers",
         "security": [
           {
-            "BearerAuth": [
-
-            ]
+            "BearerAuth": []
           }
         ],
         "responses": {
@@ -540,6 +519,70 @@
                   "type": "string"
                 }
               },
+              "stringValues": {
+                "type": "array",
+                "examples": [
+                  [
+                    "alpha",
+                    "beta"
+                  ]
+                ],
+                "items": {
+                  "type": "string"
+                }
+              },
+              "longValues": {
+                "type": "array",
+                "examples": [
+                  [
+                    1,
+                    9223372036854775807
+                  ]
+                ],
+                "items": {
+                  "type": "integer",
+                  "format": "int64"
+                }
+              },
+              "doubleValues": {
+                "type": "array",
+                "examples": [
+                  [
+                    10.5,
+                    99.99
+                  ]
+                ],
+                "items": {
+                  "type": "number",
+                  "format": "double"
+                }
+              },
+              "objectValues": {
+                "type": "array",
+                "examples": [
+                  [
+                    {
+                      "code": "simple",
+                      "active": true
+                    }
+                  ]
+                ],
+                "items": {
+                  "type": "object",
+                  "required": [
+                    "code",
+                    "active"
+                  ],
+                  "properties": {
+                    "code": {
+                      "type": "string"
+                    },
+                    "active": {
+                      "type": "boolean"
+                    }
+                  }
+                }
+              },
               "nestedItems": {
                 "type": "array",
                 "items": {
@@ -549,8 +592,7 @@
                   }
                 }
               },
-              "freeForm": {
-              },
+              "freeForm": {},
               "secret": {
                 "type": "string",
                 "format": "password",

@@ -1,7 +1,7 @@
 openapi: "3.2.0"
 info: {title: Rejected querystring parameter, version: 1.0.0}
 paths:
-  /manual/items/{id}:
+  /manual/items:
     get:
       tags: [manual-negative]
       parameters:

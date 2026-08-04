@@ -158,8 +158,7 @@ paths:
         "206":
           description: Binary patch receipt
           schema:
-            type: string
-            format: binary
+            type: file
     delete:
       tags: [manual-matrix]
       operationId: deleteManualItem
@@ -239,6 +238,36 @@ definitions:
             type: object
             additionalProperties:
               type: string
+          stringValues:
+            type: array
+            example: [alpha, beta]
+            items:
+              type: string
+          longValues:
+            type: array
+            example: [1, 9223372036854775807]
+            items:
+              type: integer
+              format: int64
+          doubleValues:
+            type: array
+            example: [10.5, 99.99]
+            items:
+              type: number
+              format: double
+          objectValues:
+            type: array
+            example:
+              - code: simple
+                active: true
+            items:
+              type: object
+              required: [code, active]
+              properties:
+                code:
+                  type: string
+                active:
+                  type: boolean
           nestedItems:
             type: array
             items:
@@ -247,7 +276,7 @@ definitions:
                 type: integer
           secret:
             type: string
-            writeOnly: true
+            format: password
   Problem:
     type: object
     required: [code, message]
