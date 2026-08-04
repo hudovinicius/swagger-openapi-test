@@ -1,0 +1,194 @@
+openapi: "3.1.1"
+info:
+  title: Manual import matrix - OpenAPI 3.1.1
+  version: 1.0.0
+  description: Controlled fixture shared by the supported OpenAPI 3.1 patch releases.
+jsonSchemaDialect: https://json-schema.org/draft/2020-12/schema
+servers:
+  - url: https://manual.example.test/api
+security:
+  - ApiKeyAuth: []
+  - BearerAuth: []
+paths:
+  /manual/items/{id}:
+    post:
+      tags: [manual-openapi-31]
+      operationId: createManualItem
+      summary: Exercise the supported OpenAPI 3.1 and JSON Schema surface
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            pattern: '^[a-z0-9-]+$'
+        - name: labels
+          in: query
+          style: form
+          explode: false
+          allowReserved: true
+          schema:
+            type: array
+            items:
+              type: string
+        - $ref: "#/components/parameters/CorrelationId"
+        - name: session
+          in: cookie
+          schema:
+            type: [string, "null"]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Item"
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: "#/components/schemas/Item"
+            encoding:
+              tags:
+                style: pipeDelimited
+                explode: false
+          multipart/form-data:
+            schema:
+              type: object
+              required: [file]
+              properties:
+                note:
+                  type: string
+                file:
+                  type: string
+                  contentEncoding: base64
+                  contentMediaType: application/pdf
+      security:
+        - ApiKeyAuth: []
+        - BearerAuth: []
+      responses:
+        "201":
+          description: Created item
+          headers:
+            X-Rate-Limit:
+              $ref: "#/components/headers/RateLimit"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Item"
+        "202":
+          description: Any JSON value is accepted
+          content:
+            application/json:
+              schema: true
+        "400":
+          description: Invalid payload
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+components:
+  parameters:
+    CorrelationId:
+      name: X-Correlation-ID
+      in: header
+      required: true
+      schema:
+        type: string
+        default: controlled-test
+  headers:
+    RateLimit:
+      description: Remaining requests
+      schema:
+        type: integer
+        format: int32
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      name: X-API-Key
+      in: header
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    BaseItem:
+      type: object
+      required: [name, status]
+      properties:
+        id:
+          type: string
+          readOnly: true
+        name:
+          type: string
+          minLength: 2
+          maxLength: 80
+          pattern: '^[A-Za-z0-9 _-]+$'
+        nickname:
+          type: [string, "null"]
+        status:
+          type: string
+          enum: [ACTIVE, INACTIVE]
+          default: ACTIVE
+        price:
+          type: number
+          minimum: 0
+          exclusiveMaximum: 1000000
+        createdAt:
+          type: string
+          format: date-time
+          readOnly: true
+    Item:
+      allOf:
+        - $ref: "#/components/schemas/BaseItem"
+        - type: object
+          required: [kind]
+          properties:
+            kind:
+              type: string
+              enum: [standard, special]
+            tags:
+              type: array
+              minItems: 1
+              uniqueItems: true
+              items:
+                type: string
+            metadata:
+              type: object
+              additionalProperties:
+                type: string
+            freeForm: {}
+            secret:
+              type: string
+              format: password
+              writeOnly: true
+          oneOf:
+            - properties:
+                kind:
+                  const: standard
+            - properties:
+                kind:
+                  const: special
+                priority:
+                  type: integer
+          discriminator:
+            propertyName: kind
+            mapping:
+              standard: "#/components/schemas/Item"
+          if:
+            properties:
+              kind:
+                const: special
+          then:
+            required: [priority]
+          dependentSchemas:
+            priority:
+              properties:
+                reviewed:
+                  type: boolean
+    Problem:
+      type: object
+      required: [code, message]
+      properties:
+        code:
+          type: string
+        message:
+          type: string
+
