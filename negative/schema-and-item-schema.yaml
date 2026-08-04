@@ -1,0 +1,15 @@
+openapi: "3.2.0"
+info: {title: Rejected ambiguous sequential body, version: 1.0.0}
+paths:
+  /manual/items/{id}:
+    get:
+      tags: [manual-negative]
+      responses:
+        "200":
+          description: Not representable
+          content:
+            application/x-ndjson:
+              schema:
+                type: array
+                items: {type: string}
+              itemSchema: {type: string}

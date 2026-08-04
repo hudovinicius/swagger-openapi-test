@@ -1,30 +1,40 @@
 openapi: "3.0.2"
 info:
   title: Manual import matrix - OpenAPI 3.0.2
-  version: 1.0.0
-  description: Controlled fixture shared by the supported OpenAPI 3.0 patch releases.
+  version: 3.0.2
+  description: Same endpoint and methods used by every supported specification version.
 servers:
   - url: https://manual.example.test/api
 security:
-  - ApiKeyAuth: []
-  - BearerAuth: []
+  - ApiKeyHeader: []
 paths:
   /manual/items/{id}:
-    post:
-      tags: [manual-openapi-30]
-      operationId: createManualItem
-      summary: Exercise the supported OpenAPI 3.0 import surface
-      deprecated: true
+    parameters:
+      - name: id
+        in: path
+        description: Item identifier
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+          pattern: '^[a-z0-9-]+$'
+      - name: locale
+        in: query
+        schema:
+          type: string
+          default: en-US
+          enum: [en-US, pt-BR]
+      - $ref: "#/components/parameters/CorrelationId"
+      - name: session
+        in: cookie
+        schema:
+          type: string
+    get:
+      tags: [manual-matrix]
+      operationId: getManualItem
+      summary: Root array response, parameters, response header and security OR
       parameters:
-        - name: id
-          in: path
-          description: Item identifier
-          required: true
-          style: simple
-          explode: false
-          schema:
-            type: string
-            pattern: '^[a-z0-9-]+$'
         - name: labels
           in: query
           style: form
@@ -32,7 +42,6 @@ paths:
           allowReserved: true
           schema:
             type: array
-            default: [manual]
             items:
               type: string
               enum: [manual, regression, smoke]
@@ -44,25 +53,91 @@ paths:
                 type: object
                 additionalProperties:
                   type: string
-        - $ref: "#/components/parameters/CorrelationId"
-        - name: session
-          in: cookie
+      security:
+        - ApiKeyHeader: []
+        - BearerAuth: []
+      responses:
+        "200":
+          description: Matching items
+          headers:
+            X-Rate-Limit:
+              $ref: "#/components/headers/RateLimit"
+          content:
+            application/vnd.totvs.item+json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Item"
+        "400":
+          description: Invalid query
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+    post:
+      tags: [manual-matrix]
+      operationId: createManualItem
+      summary: JSON object, parameter override and security AND
+      parameters:
+        - name: locale
+          in: query
           schema:
             type: string
+            default: pt-BR
+            enum: [en-US, pt-BR]
       requestBody:
         required: true
         content:
-          application/json:
+          "application/json; charset=UTF-8":
             schema:
               $ref: "#/components/schemas/Item"
+      security:
+        - ApiKeyHeader: []
+          OAuth2: ["items:write"]
+      responses:
+        "201":
+          description: Created item
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Item"
+        default:
+          description: Unexpected error
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+    put:
+      tags: [manual-matrix]
+      operationId: replaceManualItem
+      summary: URL-encoded form and scalar response
+      requestBody:
+        required: true
+        content:
           application/x-www-form-urlencoded:
             schema:
-              $ref: "#/components/schemas/Item"
+              $ref: "#/components/schemas/FormItem"
             encoding:
               tags:
                 style: pipeDelimited
                 explode: false
                 allowReserved: true
+      security:
+        - ApiKeyQuery: []
+      responses:
+        "202":
+          description: Replacement job identifier
+          content:
+            text/plain:
+              schema:
+                type: string
+    patch:
+      tags: [manual-matrix]
+      operationId: patchManualItem
+      summary: Multipart form and binary file
+      requestBody:
+        required: true
+        content:
           multipart/form-data:
             schema:
               type: object
@@ -76,38 +151,58 @@ paths:
                   format: binary
             encoding:
               file:
-                contentType: application/octet-stream
+                contentType: application/pdf
                 headers:
                   X-Checksum:
                     schema:
                       type: string
       security:
-        - ApiKeyAuth: []
+        - ApiKeyCookie: []
+      responses:
+        "206":
+          description: Binary patch receipt
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
+    delete:
+      tags: [manual-matrix]
+      operationId: deleteManualItem
+      summary: Public operation with no response body
+      security: []
+      responses:
+        "204":
+          description: Deleted
+    head:
+      tags: [manual-matrix]
+      operationId: headManualItem
+      summary: Wildcard success response containing only headers
+      security:
         - BearerAuth: []
       responses:
-        "201":
-          description: Created item
+        "2XX":
+          description: Item metadata
           headers:
-            X-Rate-Limit:
-              description: Remaining requests
+            ETag:
+              schema:
+                type: string
+            X-Item-Version:
               schema:
                 type: integer
-                format: int32
+                format: int64
+    options:
+      tags: [manual-matrix]
+      operationId: optionsManualItem
+      summary: Default response fallback and unconstrained body
+      security:
+        - OpenId: [openid]
+      responses:
+        default:
+          description: Supported capabilities
           content:
             application/json:
-              schema:
-                $ref: "#/components/schemas/Item"
-            application/xml:
-              schema:
-                $ref: "#/components/schemas/Item"
-        "400":
-          description: Invalid payload
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/Problem"
-        default:
-          description: Unexpected error
+              schema: {}
 components:
   parameters:
     CorrelationId:
@@ -118,15 +213,41 @@ components:
       schema:
         type: string
         default: controlled-test
+  headers:
+    RateLimit:
+      description: Remaining requests
+      schema:
+        type: integer
+        format: int32
   securitySchemes:
-    ApiKeyAuth:
+    ApiKeyHeader:
       type: apiKey
       name: X-API-Key
       in: header
+    ApiKeyQuery:
+      type: apiKey
+      name: api_key
+      in: query
+    ApiKeyCookie:
+      type: apiKey
+      name: session_key
+      in: cookie
     BearerAuth:
       type: http
       scheme: bearer
       bearerFormat: JWT
+    OAuth2:
+      type: oauth2
+      flows:
+        authorizationCode:
+          authorizationUrl: https://auth.example.test/authorize
+          tokenUrl: https://auth.example.test/token
+          refreshUrl: https://auth.example.test/refresh
+          scopes:
+            items:write: Modify manual items
+    OpenId:
+      type: openIdConnect
+      openIdConnectUrl: https://auth.example.test/.well-known/openid-configuration
   schemas:
     BaseItem:
       type: object
@@ -138,12 +259,16 @@ components:
       properties:
         id:
           type: string
+          format: uuid
           readOnly: true
         name:
           type: string
           minLength: 2
           maxLength: 80
           pattern: '^[A-Za-z0-9 _-]+$'
+        nickname:
+          type: string
+          nullable: true
         status:
           type: string
           enum: [ACTIVE, INACTIVE]
@@ -153,6 +278,16 @@ components:
           format: double
           minimum: 0
           maximum: 999999
+          multipleOf: 0.01
+        email:
+          type: string
+          format: email
+        website:
+          type: string
+          format: uri
+        birthday:
+          type: string
+          format: date
         createdAt:
           type: string
           format: date-time
@@ -161,7 +296,11 @@ components:
       allOf:
         - $ref: "#/components/schemas/BaseItem"
         - type: object
+          required: [kind]
           properties:
+            kind:
+              type: string
+              enum: [standard, special]
             tags:
               type: array
               minItems: 1
@@ -173,10 +312,48 @@ components:
               type: object
               additionalProperties:
                 type: string
+            nestedItems:
+              type: array
+              items:
+                type: array
+                items:
+                  type: integer
+            freeForm: {}
             secret:
               type: string
               format: password
               writeOnly: true
+          oneOf:
+            - required: [tags]
+            - required: [metadata]
+          anyOf:
+            - properties:
+                kind:
+                  enum: [standard]
+            - properties:
+                kind:
+                  enum: [special]
+          not:
+            required: [forbidden]
+          discriminator:
+            propertyName: kind
+            mapping:
+              standard: "#/components/schemas/Item"
+    FormItem:
+      type: object
+      required: [name]
+      properties:
+        name:
+          type: string
+          minLength: 2
+        status:
+          type: string
+          enum: [ACTIVE, INACTIVE]
+          default: ACTIVE
+        tags:
+          type: array
+          items:
+            type: string
     Problem:
       type: object
       required: [code, message]
@@ -185,4 +362,3 @@ components:
           type: string
         message:
           type: string
-
