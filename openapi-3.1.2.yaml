@@ -1,141 +1,277 @@
-openapi: "3.1.2"
+openapi: 3.1.2
 info:
-  title: Manual import matrix - OpenAPI 3.1.2
-  version: 3.1.2
-  description: Same endpoint and methods used by every supported specification version.
+  title: Storefront Import Test API - OpenAPI 3.1.2
+  summary: Complete and coherent contract used to test OpenAPI imports
+  description: |
+    A fictional storefront API covering catalog browsing, product maintenance,
+    binary images, order creation and operational health checks.
+  termsOfService: https://storefront.example.test/terms
+  contact:
+    name: Storefront API Team
+    email: api@example.test
+    url: https://storefront.example.test/support
+  license:
+    name: Apache 2.0
+    identifier: Apache-2.0
+  version: 1.0.0
+jsonSchemaDialect: https://spec.openapis.org/oas/3.1/dialect/base
 servers:
-  - url: https://manual.example.test/api
+  - url: https://{environment}.storefront.example.test/{basePath}
+    description: Storefront environment
+    variables:
+      environment:
+        default: sandbox
+        enum: [sandbox, production]
+      basePath:
+        default: api/v1
+tags:
+  - name: Products
+    description: Product catalog and maintenance
+  - name: Orders
+    description: Customer order lifecycle
+  - name: Operations
+    description: Operational endpoints
+externalDocs:
+  description: Integration guide
+  url: https://storefront.example.test/docs
 security:
   - ApiKeyHeader: []
 paths:
-  /manual/items/{id}:
-    parameters:
-      - name: id
-        in: path
-        description: Item identifier
-        required: true
-        style: simple
-        explode: false
-        schema:
-          type: string
-          pattern: '^[a-z0-9-]+$'
-      - name: locale
-        in: query
-        schema:
-          type: string
-          default: en-US
-          enum: [en-US, pt-BR]
-      - $ref: "#/components/parameters/CorrelationId"
-      - name: session
-        in: cookie
-        schema:
-          type: string
+  /products:
     get:
-      tags: [manual-matrix]
-      operationId: getManualItem
-      summary: Root array response, parameters, response header and security OR
+      tags: [Products]
+      operationId: listProducts
+      summary: List catalog products
+      description: Returns a paginated product collection with optional structured filters.
       parameters:
-        - name: labels
+        - $ref: '#/components/parameters/CorrelationId'
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/PageSize'
+        - name: sort
           in: query
+          description: Ordered fields; prefix a field with `-` for descending order.
           style: form
           explode: false
-          allowReserved: true
           schema:
             type: array
+            uniqueItems: true
             items:
               type: string
-              enum: [manual, regression, smoke]
+              enum: [name, -name, price, -price]
         - name: filter
           in: query
           content:
             application/json:
               schema:
-                type: object
-                additionalProperties:
-                  type: string
+                $ref: '#/components/schemas/ProductFilter'
+      security:
+        - ApiKeyHeader: []
+        - OAuth2: ['products:read']
+      responses:
+        '200':
+          $ref: '#/components/responses/ProductPageResponse'
+        '304':
+          description: Catalog has not changed
+        default:
+          $ref: '#/components/responses/ProblemResponse'
+    post:
+      tags: [Products]
+      operationId: createProduct
+      summary: Create a product
+      deprecated: false
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        $ref: '#/components/requestBodies/ProductInputBody'
+      callbacks:
+        priceChanged:
+          '{$request.body#/callbacks/priceChanged}':
+            post:
+              operationId: notifyPriceChanged
+              summary: Receive a product price change
+              requestBody:
+                required: true
+                content:
+                  application/json:
+                    schema:
+                      $ref: '#/components/schemas/PriceChangedEvent'
+              responses:
+                '204':
+                  description: Event accepted
+      security:
+        - OAuth2: ['products:write']
+      responses:
+        '201':
+          description: Product created
+          headers:
+            Location:
+              description: URL of the created product
+              schema:
+                type: string
+                format: uri-reference
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Product'
+              examples:
+                standard:
+                  $ref: '#/components/examples/StandardProduct'
+          links:
+            GetCreatedProduct:
+              operationId: getProduct
+              parameters:
+                productId: $response.body#/id
+        '409':
+          $ref: '#/components/responses/ProblemResponse'
+  /products/{productId}:
+    parameters:
+      - $ref: '#/components/parameters/ProductId'
+    get:
+      tags: [Products]
+      operationId: getProduct
+      summary: Get a product
+      parameters:
+        - name: X-Locale
+          in: header
+          description: Requested localization for product text
+          schema:
+            type: string
+            default: pt-BR
+        - name: storefront_session
+          in: cookie
+          schema:
+            type: string
       security:
         - ApiKeyHeader: []
         - BearerAuth: []
       responses:
-        "200":
-          description: Matching items
+        '200':
+          description: Product found
           headers:
-            X-Rate-Limit:
-              $ref: "#/components/headers/RateLimit"
-          content:
-            application/vnd.totvs.item+json:
-              schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/Item"
-        "400":
-          description: Invalid query
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/Problem"
-    post:
-      tags: [manual-matrix]
-      operationId: createManualItem
-      summary: JSON object, parameter override and security AND
-      deprecated: true
-      parameters:
-        - name: locale
-          in: query
-          schema:
-            type: string
-            default: pt-BR
-            enum: [en-US, pt-BR]
-      requestBody:
-        required: true
-        content:
-          "application/json; charset=UTF-8":
-            schema:
-              $ref: "#/components/schemas/Item"
-      security:
-        - ApiKeyHeader: []
-          OAuth2: ["items:write"]
-      responses:
-        "201":
-          description: Created item
+            ETag:
+              $ref: '#/components/headers/ETag'
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Item"
-        default:
-          description: Unexpected error
-          content:
-            application/problem+json:
+                $ref: '#/components/schemas/Product'
+              examples:
+                standard:
+                  $ref: '#/components/examples/StandardProduct'
+            application/xml:
               schema:
-                $ref: "#/components/schemas/Problem"
+                $ref: '#/components/schemas/Product'
+        '404':
+          $ref: '#/components/responses/ProblemResponse'
     put:
-      tags: [manual-matrix]
-      operationId: replaceManualItem
-      summary: URL-encoded form and scalar response
+      tags: [Products]
+      operationId: replaceProduct
+      summary: Replace a product
+      parameters:
+        - name: If-Match
+          in: header
+          required: true
+          schema:
+            type: string
+      requestBody:
+        $ref: '#/components/requestBodies/ProductInputBody'
+      security:
+        - OAuth2: ['products:write']
+      responses:
+        '200':
+          description: Product replaced
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Product'
+        '412':
+          $ref: '#/components/responses/ProblemResponse'
+    patch:
+      tags: [Products]
+      operationId: patchProduct
+      summary: Partially update a product
       requestBody:
         required: true
         content:
-          application/x-www-form-urlencoded:
+          application/merge-patch+json:
             schema:
-              $ref: "#/components/schemas/FormItem"
-            encoding:
-              tags:
-                style: pipeDelimited
-                explode: false
-                allowReserved: true
+              $ref: '#/components/schemas/ProductPatch'
+      security:
+        - OAuth2: ['products:write']
+      responses:
+        '200':
+          description: Product updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Product'
+        '422':
+          $ref: '#/components/responses/ProblemResponse'
+    delete:
+      tags: [Products]
+      operationId: deleteProduct
+      summary: Delete a product
+      security:
+        - OAuth2: ['products:write']
+          ApiKeyHeader: []
+      responses:
+        '204':
+          description: Product deleted
+        '404':
+          $ref: '#/components/responses/ProblemResponse'
+    head:
+      tags: [Products]
+      operationId: headProduct
+      summary: Read product metadata
       security:
         - ApiKeyQuery: []
       responses:
-        "202":
-          description: Replacement job identifier
+        2XX:
+          description: Product metadata
+          headers:
+            ETag:
+              $ref: '#/components/headers/ETag'
+            X-Product-Version:
+              schema:
+                type: integer
+                format: int64
+    options:
+      tags: [Products]
+      operationId: productOptions
+      summary: Discover product capabilities
+      security: []
+      responses:
+        default:
+          description: Supported methods and features
           content:
-            text/plain:
+            application/json:
+              schema: true
+  /products/{productId}/image:
+    parameters:
+      - $ref: '#/components/parameters/ProductId'
+    get:
+      tags: [Products]
+      operationId: getProductImage
+      summary: Download the product image
+      security:
+        - ApiKeyCookie: []
+      responses:
+        '200':
+          description: Raw product image
+          headers:
+            Content-Disposition:
               schema:
                 type: string
-    patch:
-      tags: [manual-matrix]
-      operationId: patchManualItem
-      summary: Multipart form and binary file
+          content:
+            image/png:
+              schema: {}
+            image/jpeg:
+              schema: {}
+        '404':
+          $ref: '#/components/responses/ProblemResponse'
+    put:
+      tags: [Products]
+      operationId: uploadProductImage
+      summary: Upload the product image
       requestBody:
         required: true
         content:
@@ -144,92 +280,232 @@ paths:
               type: object
               required: [file]
               properties:
-                note:
-                  type: string
-                  maxLength: 120
                 file:
-                  description: Raw PDF part; its media type is defined by the Encoding Object.
+                  type: string
+                  contentMediaType: image/png
+                altText:
+                  type: [string, 'null']
+                  maxLength: 120
             encoding:
               file:
-                contentType: application/pdf
+                contentType: image/png, image/jpeg
                 headers:
-                  X-Checksum:
+                  X-Checksum-SHA256:
                     schema:
                       type: string
+                      pattern: '^[a-f0-9]{64}$'
       security:
-        - ApiKeyCookie: []
+        - OAuth2: ['products:write']
       responses:
-        "206":
-          description: Binary patch receipt
-          content:
-            application/octet-stream:
-              schema: {}
-    delete:
-      tags: [manual-matrix]
-      operationId: deleteManualItem
-      summary: Public operation with no response body
-      security: []
-      responses:
-        "204":
-          description: Deleted
-    head:
-      tags: [manual-matrix]
-      operationId: headManualItem
-      summary: Wildcard success response containing only headers
+        '204':
+          description: Image stored
+        '413':
+          $ref: '#/components/responses/ProblemResponse'
+  /orders:
+    post:
+      tags: [Orders]
+      operationId: createOrder
+      summary: Create an order
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OrderInput'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/OrderForm'
+            encoding:
+              productIds:
+                style: form
+                explode: true
       security:
-        - BearerAuth: []
+        - ApiKeyHeader: []
+          OAuth2: ['orders:write']
       responses:
-        "2XX":
-          description: Item metadata
+        '202':
+          description: Order accepted for processing
           headers:
-            ETag:
-              schema:
-                type: string
-            X-Item-Version:
+            Retry-After:
               schema:
                 type: integer
-                format: int64
-    options:
-      tags: [manual-matrix]
-      operationId: optionsManualItem
-      summary: Default response fallback and unconstrained body
-      security:
-        - OpenId: [openid]
-      responses:
-        default:
-          description: Supported capabilities
+                minimum: 1
           content:
             application/json:
-              schema: true
+              schema:
+                $ref: '#/components/schemas/Order'
+        '400':
+          $ref: '#/components/responses/ProblemResponse'
+  /orders/{orderId}:
+    get:
+      tags: [Orders]
+      operationId: getOrder
+      summary: Get an order
+      parameters:
+        - name: orderId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      security:
+        - BearerAuth: []
+        - OpenId: [openid]
+      responses:
+        '200':
+          description: Order found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Order'
+        '404':
+          $ref: '#/components/responses/ProblemResponse'
+  /health:
+    get:
+      tags: [Operations]
+      operationId: getHealth
+      summary: Read service health
+      security: []
+      responses:
+        '200':
+          description: Service is healthy
+          content:
+            text/plain:
+              schema:
+                type: string
+                const: ok
+            application/health+json:
+              schema:
+                type: object
+                additionalProperties: true
+        '503':
+          $ref: '#/components/responses/ProblemResponse'
+webhooks:
+  orderStatusChanged:
+    post:
+      tags: [Orders]
+      operationId: orderStatusChangedWebhook
+      summary: Receive an order status change
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OrderStatusEvent'
+      responses:
+        '204':
+          description: Webhook accepted
 components:
   parameters:
     CorrelationId:
       name: X-Correlation-ID
       in: header
       required: true
-      deprecated: true
+      description: End-to-end request correlation identifier
       schema:
         type: string
-        default: controlled-test
-  headers:
-    RateLimit:
-      description: Remaining requests
+        format: uuid
+    Page:
+      name: page
+      in: query
       schema:
         type: integer
         format: int32
+        minimum: 1
+        default: 1
+    PageSize:
+      name: pageSize
+      in: query
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 100
+        default: 20
+    ProductId:
+      name: productId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    IdempotencyKey:
+      name: Idempotency-Key
+      in: header
+      required: true
+      schema:
+        type: string
+        minLength: 16
+        maxLength: 64
+  headers:
+    ETag:
+      description: Current resource entity tag
+      required: true
+      schema:
+        type: string
+  requestBodies:
+    ProductInputBody:
+      description: Complete writable product representation
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ProductInput'
+          examples:
+            standard:
+              value:
+                type: physical
+                name: Mechanical Keyboard
+                sku: KEY-001
+                price: 499.90
+                stock: 25
+  responses:
+    ProductPageResponse:
+      description: Paginated products
+      headers:
+        X-Total-Count:
+          description: Total matching products
+          schema:
+            type: integer
+            format: int64
+        Link:
+          description: RFC 8288 pagination links
+          schema:
+            type: string
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ProductPage'
+    ProblemResponse:
+      description: Request could not be processed
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Problem'
+  examples:
+    StandardProduct:
+      summary: Physical product example
+      value:
+        id: 9a25cfe8-83ee-4f5c-a5ad-fd49f122a1aa
+        type: physical
+        name: Mechanical Keyboard
+        sku: KEY-001
+        price: 499.90
+        stock: 25
+        tags: [peripherals, keyboard]
+        createdAt: '2026-01-15T10:30:00Z'
   securitySchemes:
     ApiKeyHeader:
       type: apiKey
-      name: X-API-Key
       in: header
+      name: X-API-Key
     ApiKeyQuery:
       type: apiKey
-      name: api_key
       in: query
+      name: api_key
     ApiKeyCookie:
       type: apiKey
-      name: session_key
       in: cookie
+      name: storefront_session
     BearerAuth:
       type: http
       scheme: bearer
@@ -238,176 +514,294 @@ components:
       type: oauth2
       flows:
         authorizationCode:
-          authorizationUrl: https://auth.example.test/authorize
-          tokenUrl: https://auth.example.test/token
-          refreshUrl: https://auth.example.test/refresh
+          authorizationUrl: https://identity.example.test/oauth/authorize
+          tokenUrl: https://identity.example.test/oauth/token
+          refreshUrl: https://identity.example.test/oauth/refresh
           scopes:
-            items:write: Modify manual items
+            products:read: Read the product catalog
+            products:write: Maintain products
+            orders:write: Create orders
     OpenId:
       type: openIdConnect
-      openIdConnectUrl: https://auth.example.test/.well-known/openid-configuration
+      openIdConnectUrl: https://identity.example.test/.well-known/openid-configuration
   schemas:
-    BaseItem:
+    Money:
+      type: number
+      format: double
+      minimum: 0
+      maximum: 9999999.99
+      multipleOf: 0.01
+    ProductBase:
       type: object
-      required: [name, status]
-      discriminator:
-        propertyName: kind
-        mapping:
-          standard: "#/components/schemas/Item"
+      required: [type, name, sku, price]
       properties:
-        id:
+        type:
           type: string
-          format: uuid
-          readOnly: true
+          enum: [physical, digital]
         name:
           type: string
           minLength: 2
-          maxLength: 80
-          pattern: '^[A-Za-z0-9 _-]+$'
-        nickname:
-          type: [string, "null"]
-        status:
+          maxLength: 120
+          pattern: '^[^<>]+$'
+        sku:
           type: string
-          enum: [ACTIVE, INACTIVE]
-          default: ACTIVE
+          pattern: '^[A-Z0-9-]{3,32}$'
+        description:
+          type: [string, 'null']
+          maxLength: 2000
         price:
-          type: number
-          format: double
+          $ref: '#/components/schemas/Money'
+        tags:
+          type: array
+          uniqueItems: true
+          maxItems: 20
+          items:
+            type: string
+        attributes:
+          type: object
+          additionalProperties:
+            type: string
+        dimensions:
+          type: array
+          minItems: 3
+          maxItems: 3
+          prefixItems:
+            - type: number
+            - type: number
+            - type: number
+          items: {}
+    ProductInput:
+      allOf:
+        - $ref: '#/components/schemas/ProductBase'
+        - oneOf:
+            - $ref: '#/components/schemas/PhysicalProductInput'
+            - $ref: '#/components/schemas/DigitalProductInput'
+      discriminator:
+        propertyName: type
+        mapping:
+          physical: '#/components/schemas/PhysicalProductInput'
+          digital: '#/components/schemas/DigitalProductInput'
+    PhysicalProductInput:
+      type: object
+      required: [stock, weightGrams]
+      properties:
+        type:
+          const: physical
+        stock:
+          type: integer
+          format: int32
           minimum: 0
-          maximum: 999999
-          multipleOf: 0.01
-        email:
-          type: string
-          format: email
-        website:
+        weightGrams:
+          type: integer
+          minimum: 1
+    DigitalProductInput:
+      type: object
+      required: [downloadUrl]
+      properties:
+        type:
+          const: digital
+        downloadUrl:
           type: string
           format: uri
-        birthday:
+        checksum:
           type: string
-          format: date
-        createdAt:
-          type: string
-          format: date-time
-          readOnly: true
-    Item:
+          pattern: '^[a-f0-9]{64}$'
+    Product:
       allOf:
-        - $ref: "#/components/schemas/BaseItem"
+        - $ref: '#/components/schemas/ProductInput'
         - type: object
-          required: [kind]
+          required: [id, createdAt]
           properties:
-            kind:
+            id:
               type: string
-              enum: [standard, special]
-            tags:
-              type: array
-              minItems: 1
-              maxItems: 10
-              uniqueItems: true
-              items:
-                type: string
-            metadata:
-              type: object
-              additionalProperties:
-                type: string
-            stringValues:
-              type: array
-              examples:
-                - [alpha, beta]
-              items:
-                type: string
-            longValues:
-              type: array
-              examples:
-                - [1, 9223372036854775807]
-              items:
-                type: integer
-                format: int64
-            doubleValues:
-              type: array
-              examples:
-                - [10.5, 99.99]
-              items:
-                type: number
-                format: double
-            objectValues:
-              type: array
-              examples:
-                - - code: simple
-                    active: true
-              items:
-                type: object
-                required: [code, active]
-                properties:
-                  code:
-                    type: string
-                  active:
-                    type: boolean
-            nestedItems:
-              type: array
-              items:
-                type: array
-                items:
-                  type: integer
-            freeForm: {}
-            secret:
+              format: uuid
+              readOnly: true
+            createdAt:
               type: string
-              format: password
+              format: date-time
+              readOnly: true
+            updatedAt:
+              type: [string, 'null']
+              format: date-time
+              readOnly: true
+            internalCost:
+              allOf:
+                - $ref: '#/components/schemas/Money'
               writeOnly: true
-          oneOf:
-            - properties:
-                kind:
-                  const: standard
-            - properties:
-                kind:
-                  const: special
-                priority:
-                  type: integer
-          anyOf:
-            - required: [tags]
-            - required: [metadata]
-          not:
-            required: [forbidden]
-          if:
-            properties:
-              kind:
-                const: special
-          then:
-            required: [priority]
-          else:
-            properties:
-              priority:
-                maximum: 0
-          dependentSchemas:
-            priority:
-              properties:
-                reviewed:
-                  type: boolean
-          dependentRequired:
-            priority: [kind]
-          discriminator:
-            propertyName: kind
-            mapping:
-              standard: "#/components/schemas/Item"
-    FormItem:
+    ProductPatch:
       type: object
-      required: [name]
+      minProperties: 1
       properties:
         name:
           type: string
           minLength: 2
-        status:
-          type: string
-          enum: [ACTIVE, INACTIVE]
-          default: ACTIVE
+        description:
+          type: [string, 'null']
+        price:
+          $ref: '#/components/schemas/Money'
+        stock:
+          type: integer
+          minimum: 0
+      dependentRequired:
+        stock: [type]
+      if:
+        required: [type]
+        properties:
+          type:
+            const: digital
+      then:
+        not:
+          required: [stock]
+    ProductFilter:
+      type: object
+      properties:
+        minPrice:
+          $ref: '#/components/schemas/Money'
+        maxPrice:
+          $ref: '#/components/schemas/Money'
         tags:
           type: array
           items:
             type: string
+      anyOf:
+        - required: [minPrice]
+        - required: [maxPrice]
+        - required: [tags]
+    ProductPage:
+      type: object
+      required: [items, page, pageSize, total]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/Product'
+        page:
+          type: integer
+          minimum: 1
+        pageSize:
+          type: integer
+          minimum: 1
+        total:
+          type: integer
+          format: int64
+          minimum: 0
+    OrderLineInput:
+      type: object
+      required: [productId, quantity]
+      properties:
+        productId:
+          type: string
+          format: uuid
+        quantity:
+          type: integer
+          minimum: 1
+          maximum: 999
+    OrderInput:
+      type: object
+      required: [customerEmail, lines]
+      properties:
+        customerEmail:
+          type: string
+          format: email
+        lines:
+          type: array
+          minItems: 1
+          items:
+            $ref: '#/components/schemas/OrderLineInput'
+        notes:
+          type: [string, 'null']
+        metadata:
+          type: object
+          additionalProperties: true
+    OrderForm:
+      type: object
+      required: [customerEmail, productIds]
+      properties:
+        customerEmail:
+          type: string
+          format: email
+        productIds:
+          type: array
+          minItems: 1
+          items:
+            type: string
+            format: uuid
+    Order:
+      allOf:
+        - $ref: '#/components/schemas/OrderInput'
+        - type: object
+          required: [id, status, total, createdAt]
+          properties:
+            id:
+              type: string
+              format: uuid
+              readOnly: true
+            status:
+              type: string
+              enum: [pending, paid, shipped, cancelled]
+              readOnly: true
+            total:
+              allOf:
+                - $ref: '#/components/schemas/Money'
+              readOnly: true
+            createdAt:
+              type: string
+              format: date-time
+              readOnly: true
+    PriceChangedEvent:
+      type: object
+      required: [productId, oldPrice, newPrice, occurredAt]
+      properties:
+        productId:
+          type: string
+          format: uuid
+        oldPrice:
+          $ref: '#/components/schemas/Money'
+        newPrice:
+          $ref: '#/components/schemas/Money'
+        occurredAt:
+          type: string
+          format: date-time
+    OrderStatusEvent:
+      type: object
+      required: [orderId, previousStatus, status, occurredAt]
+      properties:
+        orderId:
+          type: string
+          format: uuid
+        previousStatus:
+          type: [string, 'null']
+        status:
+          type: string
+          enum: [pending, paid, shipped, cancelled]
+        occurredAt:
+          type: string
+          format: date-time
     Problem:
       type: object
-      required: [code, message]
+      required: [type, title, status]
       properties:
-        code:
+        type:
           type: string
-        message:
+          format: uri
+        title:
           type: string
+        status:
+          type: integer
+          minimum: 400
+          maximum: 599
+        detail:
+          type: string
+        instance:
+          type: string
+          format: uri-reference
+        violations:
+          type: array
+          items:
+            type: object
+            required: [field, message]
+            properties:
+              field:
+                type: string
+              message:
+                type: string

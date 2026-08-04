@@ -1,72 +1,73 @@
-# Matriz manual de Swagger/OpenAPI
+# Matriz Swagger/OpenAPI para testes de importação
 
-A matriz usa o mesmo endpoint e os mesmos métodos em todas as versões homologadas:
+Este repositório contém especificações novas e independentes para todas as versões
+publicadas de Swagger/OpenAPI, exceto Swagger 1.x. Os documentos existem somente
+em YAML.
 
-- Swagger 2.0;
-- OpenAPI 3.0.0, 3.0.1, 3.0.2, 3.0.3 e 3.0.4;
-- OpenAPI 3.1.0, 3.1.1 e 3.1.2;
-- OpenAPI 3.2.0, pelo adaptador controlado para 3.1.2.
+## Versões
 
-Cada versão está disponível em YAML e JSON.
-
-## Endpoint comum
-
-Todos os documentos positivos definem `/manual/items/{id}`.
-
-| Método | Resultado esperado após a importação |
+| Família | Arquivos |
 |---|---|
-| GET | parâmetros path/query/header/cookie, segurança OR, header de resposta e array na raiz |
-| POST | endpoint deprecated, JSON com charset, override de parâmetro, composição e segurança AND |
-| PUT | `application/x-www-form-urlencoded`, encoding por campo e resposta escalar |
-| PATCH | `multipart/form-data`, upload binário e resposta `application/octet-stream` |
-| DELETE | operação pública, resposta 204 e ausência de bodies artificiais |
-| HEAD | fallback de resposta `2XX` no OpenAPI e saída contendo somente headers |
-| OPTIONS | fallback `default` e body livre/boolean schema conforme a família |
+| Swagger 2.0 | `swagger-2.0.yaml` |
+| OpenAPI 3.0 | `openapi-3.0.0.yaml` até `openapi-3.0.4.yaml` |
+| OpenAPI 3.1 | `openapi-3.1.0.yaml` até `openapi-3.1.2.yaml` |
+| OpenAPI 3.2 | `openapi-3.2.0.yaml` |
 
-As diferenças intencionais entre as famílias são:
+## API comum
 
-| Família | Representação específica |
+Todos os documentos descrevem a mesma loja fictícia, com os mesmos 6 paths,
+13 operações e `operationId`s:
+
+| Path | Métodos | Cobertura principal |
+|---|---|---|
+| `/products` | GET, POST | paginação, arrays, filtro estruturado, criação, exemplos e segurança OR |
+| `/products/{productId}` | GET, PUT, PATCH, DELETE, HEAD, OPTIONS | path/header/cookie, JSON/XML, merge patch, segurança AND, 204 e resposta curinga |
+| `/products/{productId}/image` | GET, PUT | download binário e upload multipart |
+| `/orders` | POST | objetos e arrays aninhados, form URL encoded no OAS 3 e OAuth2 |
+| `/orders/{orderId}` | GET | UUID, bearer/OpenID e erros referenciados |
+| `/health` | GET | operação pública, resposta escalar e objeto livre |
+
+O domínio é coerente entre versões: produtos físicos ou digitais são consultados e
+mantidos, imagens são transferidas separadamente e pedidos referenciam produtos.
+
+## Cobertura compartilhada
+
+- metadados completos, servers/host, tags e documentação externa;
+- parâmetros de path, query e header, defaults, enumerações, patterns e limites;
+- JSON, XML, problem JSON, merge patch, form URL encoded, multipart, texto e binário;
+- respostas inline e reutilizáveis, headers, exemplos, 2xx/4xx/default e ausência de body;
+- API key em header/query, Basic ou bearer, OAuth2, OpenID e operação pública;
+- `$ref`, objetos, mapas livres/tipados, arrays simples/aninhados e `allOf`;
+- tipos e formatos string, boolean, integer/int32/int64, number/double, UUID, URI,
+  email, date-time e password/read-only/write-only onde suportados.
+
+## Diferenças intencionais
+
+| Família | Recursos específicos exercitados |
 |---|---|
-| Swagger 2.0 | body/formData, `collectionFormat`, `securityDefinitions`, resposta `type: file`; sem cookie, OpenID Connect, `writeOnly` ou resposta curinga `2XX` |
-| OpenAPI 3.0.x | `requestBody`/`content`, `nullable`, binário por `type: string` + `format: binary` |
-| OpenAPI 3.1.x | JSON Schema 2020-12, union com `null`, `const`, condicionais, `dependent*`, boolean schema e binário indicado pelo media type/encoding |
-| OpenAPI 3.2.0 | mantém os recursos 3.1 e acrescenta `$self` e `itemSchema`; recursos 3.2 sem projeção no adaptador ficam nos casos negativos |
+| Swagger 2.0 | `host`, `basePath`, `consumes`, `produces`, `definitions`, `securityDefinitions`, parâmetros `body`/`formData`, `collectionFormat`, Basic Auth e `type: file` |
+| OpenAPI 3.0.x | `servers`, `components`, `requestBody/content`, callbacks, links, cookie parameters, `nullable` e `type: string` + `format: binary` |
+| OpenAPI 3.1.x | JSON Schema 2020-12, `jsonSchemaDialect`, união com `null`, `const`, schemas booleanos, condicionais, `dependentRequired`, `prefixItems` e `webhooks` |
+| OpenAPI 3.2.0 | `$self`, tags hierárquicas (`summary`, `parent`, `kind`), parâmetro `querystring` e `itemSchema` para JSON text sequences |
 
-As versões de patch de uma mesma família possuem a mesma cobertura; nelas,
-somente `openapi`, `info.title` e `info.version` variam.
+As versões patch de 3.0 e 3.1 mantêm o mesmo conjunto de recursos; somente o campo
+`openapi` e o título identificam o patch correspondente.
 
-## Como usar
+## Gerar e validar
 
-Disponibilize o arquivo em uma URL aceita por `import-swagger.source.*` e envie essa
-URL no campo `swaggerEndPoint` de `POST /api/v1/rest-resources/import-swagger`.
+Os patches OpenAPI são derivados da especificação canônica 3.1.2:
 
-Exemplo de corpo:
-
-```json
-{
-  "applicationId": "00000000-0000-0000-0000-000000000001",
-  "serviceId": "00000000-0000-0000-0000-000000000002",
-  "swaggerEndPoint": "https://host-permitido/manual/openapi-3.1.2.yaml",
-  "update": true
-}
+```bash
+ruby scripts/render_openapi_version.rb 3.0.4
+ruby scripts/render_openapi_version.rb 3.2.0
 ```
 
-Uma importação positiva deve criar sete recursos, todos com path
-`/manual/items/{{{id}}}` e tag `manual-matrix`.
+Para validar a matriz inteira, sem dependências externas:
 
-## Cobertura adicional
+```bash
+ruby scripts/validate_matrix.rb
+```
 
-A matriz inclui parâmetros por schema e content, override por `(name, in)`, tipos e
-constraints, arrays primitivos (`string`, `int64` e `double`), arrays de objetos,
-arrays aninhados, mapas, objetos livres, `$ref`, `allOf`, `oneOf`,
-`anyOf`, `not`, condicionais 3.1, visibilidade, segurança OR/AND/pública, API keys
-em header/query/cookie, Basic, bearer, OAuth2, OpenID Connect, respostas
-200/201/202/204/206/2XX/default, headers inline/referenciados e media types JSON,
-vendor JSON, problem JSON, form, multipart, texto e binário.
-
-## Casos negativos OpenAPI 3.2
-
-A subpasta `negative` possui um arquivo isolado para cada construção válida que o
-adaptador 3.2 rejeita ou não projeta de forma controlada. Esses arquivos testam o
-comportamento do importador, não erros sintáticos da especificação. Cada importação
-deve falhar com `SWAGGER_IMPORT_VALIDATION_FAILED`, sem persistir recursos.
+A validação confere parse YAML, versões declaradas, igualdade de paths/métodos e
+`operationId`s, resolução de todos os `$ref` locais e recursos próprios de cada
+família.
