@@ -16,7 +16,7 @@ Todos os documentos positivos definem `/manual/items/{id}`.
 | Método | Resultado esperado após a importação |
 |---|---|
 | GET | parâmetros path/query/header/cookie, segurança OR, header de resposta e array na raiz |
-| POST | JSON com charset, override de parâmetro, composição de schema e segurança AND |
+| POST | endpoint deprecated, JSON com charset, override de parâmetro, composição e segurança AND |
 | PUT | `application/x-www-form-urlencoded`, encoding por campo e resposta escalar |
 | PATCH | `multipart/form-data`, upload binário e resposta `application/octet-stream` |
 | DELETE | operação pública, resposta 204 e ausência de bodies artificiais |

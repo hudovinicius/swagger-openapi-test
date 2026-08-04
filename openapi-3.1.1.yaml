@@ -78,6 +78,7 @@ paths:
       tags: [manual-matrix]
       operationId: createManualItem
       summary: JSON object, parameter override and security AND
+      deprecated: true
       parameters:
         - name: locale
           in: query

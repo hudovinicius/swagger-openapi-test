@@ -144,6 +144,7 @@
         ],
         "operationId": "createManualItem",
         "summary": "JSON object, parameter override and security AND",
+        "deprecated": true,
         "consumes": [
           "application/json; charset=UTF-8"
         ],

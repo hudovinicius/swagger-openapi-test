@@ -142,6 +142,7 @@
         ],
         "operationId": "createManualItem",
         "summary": "JSON object, parameter override and security AND",
+        "deprecated": true,
         "parameters": [
           {
             "name": "locale",
