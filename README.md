@@ -53,21 +53,26 @@ mantidos, imagens são transferidas separadamente e pedidos referenciam produtos
 As versões patch de 3.0 e 3.1 mantêm o mesmo conjunto de recursos; somente o campo
 `openapi` e o título identificam o patch correspondente.
 
-## Gerar e validar
+## Validação
 
-Os patches OpenAPI são derivados da especificação canônica 3.1.2:
-
-```bash
-ruby scripts/render_openapi_version.rb 3.0.4
-ruby scripts/render_openapi_version.rb 3.2.0
-```
-
-Para validar a matriz inteira, sem dependências externas:
-
-```bash
-ruby scripts/validate_matrix.rb
-```
-
-A validação confere parse YAML, versões declaradas, igualdade de paths/métodos e
-`operationId`s, resolução de todos os `$ref` locais e recursos próprios de cada
+Cada documento deve ser validado contra o schema oficial mais recente da sua
+família. O schema de uma versão minor se aplica a todas as versões patch da mesma
 família.
+
+| Família | Schema oficial |
+|---|---|
+| Swagger 2.0 | [2017-08-27](https://spec.openapis.org/oas/2.0/schema/2017-08-27) |
+| OpenAPI 3.0.x | [2024-10-18](https://spec.openapis.org/oas/3.0/schema/2024-10-18) |
+| OpenAPI 3.1.x | [2025-11-23](https://spec.openapis.org/oas/3.1/schema/2025-11-23) |
+| OpenAPI 3.2.x | [2025-11-23](https://spec.openapis.org/oas/3.2/schema/2025-11-23) |
+
+Além da conformidade estrutural com esses schemas, a matriz deve preservar:
+
+- parse YAML válido e versão declarada correspondente ao nome do arquivo;
+- os mesmos paths, métodos e `operationId`s em todos os documentos;
+- `operationId`s únicos e parâmetros de path obrigatórios;
+- resolução de todos os `$ref` locais;
+- uso de recursos somente nas famílias que os suportam.
+
+Os YAMLs são independentes e mantidos diretamente. O repositório não inclui
+scripts de geração nem dependências de validação.
