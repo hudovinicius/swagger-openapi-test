@@ -15,8 +15,8 @@ em YAML.
 
 ## API comum
 
-Todos os documentos descrevem a mesma loja fictícia, com os mesmos 6 paths,
-13 operações e `operationId`s:
+Todos os documentos descrevem a mesma loja fictícia, com os mesmos 7 paths,
+14 operações e `operationId`s:
 
 | Path | Métodos | Cobertura principal |
 |---|---|---|
@@ -26,6 +26,7 @@ Todos os documentos descrevem a mesma loja fictícia, com os mesmos 6 paths,
 | `/orders` | POST | objetos e arrays aninhados, form URL encoded no OAS 3 e OAuth2 |
 | `/orders/{orderId}` | GET | UUID, bearer/OpenID e erros referenciados |
 | `/health` | GET | operação pública, resposta escalar e objeto livre |
+| `/data-types` | POST | todos os tipos de schema e formatos comuns no request e no response |
 
 O domínio é coerente entre versões: produtos físicos ou digitais são consultados e
 mantidos, imagens são transferidas separadamente e pedidos referenciam produtos.
@@ -39,7 +40,8 @@ mantidos, imagens são transferidas separadamente e pedidos referenciam produtos
 - API key em header/query, Basic ou bearer, OAuth2, OpenID e operação pública;
 - `$ref`, objetos, mapas livres/tipados, arrays simples/aninhados e `allOf`;
 - tipos e formatos string, boolean, integer/int32/int64, number/double, UUID, URI,
-  email, date-time e password/read-only/write-only onde suportados.
+  email, byte, binary, date, date-time, password, float, arrays, objetos e valores
+  nullable/null, além de read-only/write-only, onde suportados.
 
 ## Diferenças intencionais
 

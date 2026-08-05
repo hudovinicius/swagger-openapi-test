@@ -433,6 +433,28 @@ paths:
               type: object
               additionalProperties:
                 type: string
+  /data-types:
+    post:
+      tags: [Operations]
+      operationId: echoDataTypes
+      summary: Echo every supported schema data type
+      description: Accepts and returns one example of every OpenAPI and JSON Schema data type and common format.
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AllDataTypes'
+      responses:
+        '200':
+          description: Every submitted value echoed back
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AllDataTypes'
+        '400':
+          $ref: '#/components/responses/ProblemResponse'
 webhooks:
   orderStatusChanged:
     post:
@@ -584,6 +606,149 @@ components:
       type: openIdConnect
       openIdConnectUrl: https://identity.example.test/.well-known/openid-configuration
   schemas:
+    AllDataTypes:
+      type: object
+      required:
+        - stringValue
+        - byteValue
+        - binaryValue
+        - dateValue
+        - dateTimeValue
+        - passwordValue
+        - emailValue
+        - uuidValue
+        - uriValue
+        - integerValue
+        - int32Value
+        - int64Value
+        - numberValue
+        - floatValue
+        - doubleValue
+        - booleanValue
+        - arrayValue
+        - integerArrayValue
+        - numberArrayValue
+        - booleanArrayValue
+        - objectArrayValue
+        - nestedArrayValue
+        - objectValue
+        - nullValue
+      properties:
+        stringValue:
+          type: string
+          example: Storefront
+        byteValue:
+          type: string
+          format: byte
+          example: U3RvcmVmcm9udA==
+        binaryValue:
+          type: string
+          format: binary
+          example: raw-binary-content
+        dateValue:
+          type: string
+          format: date
+          example: '2026-08-05'
+        dateTimeValue:
+          type: string
+          format: date-time
+          example: '2026-08-05T12:30:00Z'
+        passwordValue:
+          type: string
+          format: password
+          example: secret-value
+        emailValue:
+          type: string
+          format: email
+          example: customer@example.test
+        uuidValue:
+          type: string
+          format: uuid
+          example: 9a25cfe8-83ee-4f5c-a5ad-fd49f122a1aa
+        uriValue:
+          type: string
+          format: uri
+          example: https://storefront.example.test/products/1
+        integerValue:
+          type: integer
+          example: 10
+        int32Value:
+          type: integer
+          format: int32
+          example: 2147483647
+        int64Value:
+          type: integer
+          format: int64
+          example: 9007199254740991
+        numberValue:
+          type: number
+          example: 10.25
+        floatValue:
+          type: number
+          format: float
+          example: 3.14
+        doubleValue:
+          type: number
+          format: double
+          example: 2.718281828
+        booleanValue:
+          type: boolean
+          example: true
+        arrayValue:
+          type: array
+          items:
+            type: string
+          example: [alpha, beta]
+        integerArrayValue:
+          type: array
+          items:
+            type: integer
+            format: int32
+          example: [1, 2, 3]
+        numberArrayValue:
+          type: array
+          items:
+            type: number
+            format: double
+          example: [1.5, 2.75, 10.25]
+        booleanArrayValue:
+          type: array
+          items:
+            type: boolean
+          example: [true, false]
+        objectArrayValue:
+          type: array
+          items:
+            type: object
+            required: [id, name]
+            properties:
+              id:
+                type: integer
+              name:
+                type: string
+          example:
+            - id: 1
+              name: first
+            - id: 2
+              name: second
+        nestedArrayValue:
+          type: array
+          items:
+            type: array
+            items:
+              type: integer
+          example:
+            - [1, 2]
+            - [3, 4]
+        objectValue:
+          type: object
+          additionalProperties:
+            type: string
+          example:
+            environment: sandbox
+        nullValue:
+          type: 'null'
+          example: null
     Money:
       type: number
       format: double
