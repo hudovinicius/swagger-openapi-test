@@ -1,0 +1,9 @@
+openapi: 3.0.3
+
+paths:
+  /health:
+    get:
+      summary: Verificar disponibilidade
+      responses:
+        "200":
+          description: Serviço disponível
