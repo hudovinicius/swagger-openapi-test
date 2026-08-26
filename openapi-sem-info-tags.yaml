@@ -7,3 +7,23 @@ paths:
       responses:
         "200":
           description: Serviço disponível
+
+  /customers:
+    get:
+      tags:
+        - Customers
+      summary: Listar clientes
+      responses:
+        "200":
+          description: Lista de clientes
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                    name:
+                      type: string
