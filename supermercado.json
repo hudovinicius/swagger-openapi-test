@@ -1,0 +1,346 @@
+{
+  "openapi": "3.0.4",
+  "info": {
+    "title": "API Sugestão de Abastecimento",
+    "description": "API Sugestão de Abastecimento",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "/SugestaoAbastecimentoApi"
+    }
+  ],
+  "paths": {
+    "/api/v1/SugestoesAbastecimento": {
+      "post": {
+        "tags": [
+          "SugestoesAbastecimento"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/InserirSugestaoRequestDto"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/InserirSugestaoRequestDto"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/InserirSugestaoRequestDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/InserirSugestaoResponseDto"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InserirSugestaoResponseDto"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InserirSugestaoResponseDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/SugestoesAbastecimento/bulk": {
+      "post": {
+        "tags": [
+          "SugestoesAbastecimento"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/InserirSugestoesRequestDto"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/InserirSugestoesRequestDto"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/InserirSugestoesRequestDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/InserirSugestoesResponseDto"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InserirSugestoesResponseDto"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InserirSugestoesResponseDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "ErrorResponse": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "nullable": true
+          },
+          "message": {
+            "type": "string",
+            "nullable": true
+          },
+          "detailedMessage": {
+            "type": "string",
+            "nullable": true
+          },
+          "helpUrl": {
+            "type": "string",
+            "nullable": true
+          },
+          "details": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/NotificationEvent"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "InserirSugestaoRequestDto": {
+        "type": "object",
+        "properties": {
+          "sugestao": {
+            "$ref": "#/components/schemas/SugestaoDto"
+          },
+          "_expandables": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "InserirSugestaoResponseDto": {
+        "type": "object",
+        "properties": {
+          "idProcesso": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "sugestao": {
+            "$ref": "#/components/schemas/SugestaoDto"
+          },
+          "_expandables": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "InserirSugestoesRequestDto": {
+        "type": "object",
+        "properties": {
+          "sugestoes": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SugestaoDto"
+            },
+            "nullable": true
+          },
+          "_expandables": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "InserirSugestoesResponseDto": {
+        "type": "object",
+        "properties": {
+          "idProcesso": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "sugestoes": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SugestaoDto"
+            },
+            "nullable": true
+          },
+          "_expandables": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "NotificationEvent": {
+        "type": "object",
+        "properties": {
+          "guid": {
+            "type": "string",
+            "format": "uuid",
+            "readOnly": true
+          },
+          "code": {
+            "type": "string",
+            "nullable": true,
+            "readOnly": true
+          },
+          "message": {
+            "type": "string",
+            "nullable": true,
+            "readOnly": true
+          },
+          "detailedMessage": {
+            "type": "string",
+            "nullable": true,
+            "readOnly": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "SugestaoDto": {
+        "type": "object",
+        "properties": {
+          "seqProduto": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "seqFornecedor": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "nroEmpresa": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "qtdSugerida": {
+            "type": "number",
+            "format": "double"
+          },
+          "dtaHoraPedido": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "tipoLote": {
+            "type": "string",
+            "nullable": true
+          },
+          "observacao": {
+            "type": "string",
+            "nullable": true
+          },
+          "_expandables": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "securitySchemes": {
+      "Bearer": {
+        "type": "apiKey",
+        "description": "JWT Authorization header using the Bearer scheme. \r\n\r\n Enter 'Bearer' [space] and then your token in the text input below.\r\n\r\nExample: \"Bearer 12345abcdef\"",
+        "name": "Authorization",
+        "in": "header"
+      }
+    }
+  },
+  "security": [
+    {
+      "Bearer": [ ]
+    }
+  ]
+}
