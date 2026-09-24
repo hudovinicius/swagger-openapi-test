@@ -1,0 +1,2092 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Homologação consolidada do importador REST",
+    "version": "2.0.0",
+    "description": "Fixture consolidado das decisões de comparacao.md: AJUSTAR, ADICIONAR, REMOVER e preservação dos tipos OpenAPI em PATH/headers. Consulte roteiro-testes-consolidados.md. Não implementa um servidor; configure o destino do serviço para um mock ao executar requisições."
+  },
+  "servers": [
+    {
+      "url": "https://example.invalid",
+      "description": "Endereço fictício; configure um mock para executar requisições."
+    }
+  ],
+  "tags": [
+    {
+      "name": "Homologação importador",
+      "description": "Casos numerados; resultados esperados em roteiro-testes-consolidados.md."
+    }
+  ],
+  "paths": {
+    "/tests/labels": {
+      "post": {
+        "tags": [
+          "Homologação importador"
+        ],
+        "operationId": "testLabels",
+        "summary": "01 — Labels e identidade dos campos",
+        "description": "MOD-07 / preservação. Labels de corpo mantêm a grafia atual e keys originais; conferir firstName, HTTPStatus e objetos aninhados.",
+        "responses": {
+          "200": {
+            "description": "Resposta para inspeção do model de saída",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "firstName": {
+                      "type": "string"
+                    },
+                    "HTTPStatus": {
+                      "type": "string"
+                    },
+                    "pageSize": {
+                      "type": "integer"
+                    },
+                    "customerId": {
+                      "type": "string"
+                    },
+                    "address": {
+                      "type": "object",
+                      "properties": {
+                        "postalCode": {
+                          "type": "string"
+                        },
+                        "streetName": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  },
+                  "required": [
+                    "firstName"
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "firstName": {
+                    "type": "string"
+                  },
+                  "HTTPStatus": {
+                    "type": "string"
+                  },
+                  "pageSize": {
+                    "type": "integer"
+                  },
+                  "customerId": {
+                    "type": "string"
+                  },
+                  "address": {
+                    "type": "object",
+                    "properties": {
+                      "postalCode": {
+                        "type": "string"
+                      },
+                      "streetName": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                },
+                "required": [
+                  "firstName"
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    "/tests/enums": {
+      "post": {
+        "tags": [
+          "Homologação importador"
+        ],
+        "operationId": "testEnums",
+        "summary": "02 — Enums e expressões dinâmicas",
+        "description": "Enums / preservação. Enums continuam selects com opções string/número/boolean no tipo original. Defaults de query e corpo não devem preencher o formulário.",
+        "responses": {
+          "200": {
+            "description": "Resposta para inspeção do model de saída",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "enum": [
+                        "PENDING",
+                        "APPROVED",
+                        "REJECTED"
+                      ]
+                    },
+                    "priority": {
+                      "type": "integer",
+                      "enum": [
+                        0,
+                        1,
+                        2
+                      ]
+                    },
+                    "enabled": {
+                      "type": "boolean",
+                      "enum": [
+                        true,
+                        false
+                      ]
+                    }
+                  },
+                  "required": [
+                    "status"
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "status": {
+                    "type": "string",
+                    "enum": [
+                      "PENDING",
+                      "APPROVED",
+                      "REJECTED"
+                    ]
+                  },
+                  "priority": {
+                    "type": "integer",
+                    "enum": [
+                      0,
+                      1,
+                      2
+                    ]
+                  },
+                  "enabled": {
+                    "type": "boolean",
+                    "enum": [
+                      true,
+                      false
+                    ]
+                  }
+                },
+                "required": [
+                  "status"
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    "/tests/dynamic-body": {
+      "post": {
+        "tags": [
+          "Homologação importador"
+        ],
+        "operationId": "testDynamicBody",
+        "summary": "03 — Objetos dinâmicos e oneOf",
+        "description": "MOD-06. Primeira variante e mapas tipados projetados em campos; additionalProp1..3 nos mapas tipados. Objeto sem forma projetável pode continuar json-editor.",
+        "responses": {
+          "200": {
+            "description": "Resposta para inspeção do model de saída",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "attributes": {
+                      "type": "object",
+                      "additionalProperties": {
+                        "type": "string"
+                      }
+                    },
+                    "context": {
+                      "type": "object",
+                      "additionalProperties": true
+                    },
+                    "payment": {
+                      "oneOf": [
+                        {
+                          "$ref": "#/components/schemas/PixPayment"
+                        },
+                        {
+                          "$ref": "#/components/schemas/CardPayment"
+                        }
+                      ]
+                    }
+                  },
+                  "required": [
+                    "payment"
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "attributes": {
+                    "type": "object",
+                    "additionalProperties": {
+                      "type": "string"
+                    }
+                  },
+                  "context": {
+                    "type": "object",
+                    "additionalProperties": true
+                  },
+                  "payment": {
+                    "oneOf": [
+                      {
+                        "$ref": "#/components/schemas/PixPayment"
+                      },
+                      {
+                        "$ref": "#/components/schemas/CardPayment"
+                      }
+                    ]
+                  }
+                },
+                "required": [
+                  "payment"
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    "/tests/required-body": {
+      "post": {
+        "tags": [
+          "Homologação importador"
+        ],
+        "operationId": "testRequiredBody",
+        "summary": "04 — Corpo obrigatório e objeto opcional",
+        "description": "Required / preservação. Corpo obrigatório; filho obrigatório de objeto opcional só é exigido quando o objeto tem conteúdo. Valores 0/false contam como conteúdo.",
+        "responses": {
+          "200": {
+            "description": "Resposta para inspeção do model de saída",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "ok": {
+                      "type": "boolean"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "quantity": {
+                    "type": "integer",
+                    "minimum": 1
+                  },
+                  "notes": {
+                    "type": "string"
+                  },
+                  "shippingAddress": {
+                    "type": "object",
+                    "properties": {
+                      "street": {
+                        "type": "string"
+                      },
+                      "number": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "street"
+                    ]
+                  }
+                },
+                "required": [
+                  "name",
+                  "quantity"
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    "/tests/optional-body": {
+      "post": {
+        "tags": [
+          "Homologação importador"
+        ],
+        "operationId": "testOptionalBody",
+        "summary": "05 — Corpo opcional com campo obrigatório interno",
+        "description": "Required / preservação. Corpo opcional: filhos obrigatórios ativam ao preencher o corpo e desativam ao limpar; comparar corpo ausente com {} na execução.",
+        "responses": {
+          "200": {
+            "description": "Resposta para inspeção do model de saída",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "ok": {
+                      "type": "boolean"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "reason": {
+                    "type": "string"
+                  },
+                  "comment": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "reason"
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    "/tests/types/{numericId}/{externalCode}": {
+      "get": {
+        "tags": [
+          "Homologação importador"
+        ],
+        "operationId": "testPathAndHeaderTypes",
+        "summary": "06 — Tipos de PATH e headers",
+        "description": "MOD-08 / preservação. numericId e X-Count usam num; X-Enabled usa bool; externalCode e X-External-Code usam str. Não forçar tudo para str.",
+        "responses": {
+          "200": {
+            "description": "Resposta para inspeção do model de saída",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "ok": {
+                      "type": "boolean"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "numericId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "name": "externalCode",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "example": "00123"
+            }
+          },
+          {
+            "name": "X-Count",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "X-External-Code",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "example": "00123"
+            }
+          },
+          {
+            "name": "X-Enabled",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "boolean"
+            }
+          }
+        ]
+      }
+    },
+    "/tests/nested-arrays": {
+      "post": {
+        "tags": [
+          "Homologação importador"
+        ],
+        "operationId": "testNestedArrays",
+        "summary": "07 — Arrays aninhados e arrays de objetos",
+        "description": "PROP-09 / MOD-04. matrix.arrayObject[0].key é 0 em properties. Arrays de entrada têm fieldArray; nenhum array de saída tem fieldArray.",
+        "responses": {
+          "200": {
+            "description": "Resposta para inspeção do model de saída",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "matrix": {
+                      "type": "array",
+                      "items": {
+                        "type": "array",
+                        "items": {
+                          "type": "integer"
+                        }
+                      }
+                    },
+                    "records": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "recordId": {
+                            "type": "string"
+                          },
+                          "values": {
+                            "type": "array",
+                            "items": {
+                              "type": "number",
+                              "format": "double"
+                            }
+                          }
+                        },
+                        "required": [
+                          "recordId"
+                        ]
+                      }
+                    },
+                    "groups": {
+                      "type": "array",
+                      "items": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "name": {
+                              "type": "string"
+                            },
+                            "enabled": {
+                              "type": "boolean"
+                            }
+                          },
+                          "required": [
+                            "name"
+                          ]
+                        }
+                      }
+                    }
+                  },
+                  "required": [
+                    "matrix"
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "matrix": {
+                    "type": "array",
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "type": "integer"
+                      }
+                    }
+                  },
+                  "records": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "recordId": {
+                          "type": "string"
+                        },
+                        "values": {
+                          "type": "array",
+                          "items": {
+                            "type": "number",
+                            "format": "double"
+                          }
+                        }
+                      },
+                      "required": [
+                        "recordId"
+                      ]
+                    }
+                  },
+                  "groups": {
+                    "type": "array",
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "name": {
+                            "type": "string"
+                          },
+                          "enabled": {
+                            "type": "boolean"
+                          }
+                        },
+                        "required": [
+                          "name"
+                        ]
+                      }
+                    }
+                  }
+                },
+                "required": [
+                  "matrix"
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    "/tests/root-array": {
+      "post": {
+        "tags": [
+          "Homologação importador"
+        ],
+        "operationId": "testRootArray",
+        "summary": "08 — Array na raiz do corpo",
+        "description": "PROP-09 / MOD-04. Array raiz vira items no request e $items na resposta; saída mantém button-draggable e entrada mantém repeat.",
+        "responses": {
+          "200": {
+            "description": "Resposta para inspeção do model de saída",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "code": {
+                        "type": "string"
+                      },
+                      "accepted": {
+                        "type": "boolean"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string"
+                    },
+                    "amount": {
+                      "type": "number"
+                    }
+                  },
+                  "required": [
+                    "code"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/tests/response-selection": {
+      "get": {
+        "tags": [
+          "Homologação importador"
+        ],
+        "operationId": "testResponseSelection",
+        "summary": "09 — Seleção de status e mídia da resposta",
+        "description": "PROP-09. Selecionar 200 e a última mídia que contenha application/json. Ignorar 202/201/default quando 200 existir.",
+        "responses": {
+          "202": {
+            "description": "Resposta para inspeção do model de saída",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "ticket202": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "Resposta para inspeção do model de saída",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "created201": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "Mídias em ordem proposital: texto, vendor JSON, JSON",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/vnd.test+json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "selected200Vendor": {
+                      "type": "string"
+                    }
+                  }
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "selected200Json": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Resposta para inspeção do model de saída",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "fallbackDefault": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/tests/accepted-only": {
+      "get": {
+        "tags": [
+          "Homologação importador"
+        ],
+        "operationId": "testAcceptedOnly",
+        "summary": "10 — Resposta exclusivamente 202",
+        "description": "PROP-09. Resposta apenas 202: sem responseBody e sem grupo de corpo de saída.",
+        "responses": {
+          "202": {
+            "description": "Resposta para inspeção do model de saída",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "ticket202": {
+                      "type": "string"
+                    },
+                    "status": {
+                      "type": "string",
+                      "enum": [
+                        "QUEUED",
+                        "RUNNING"
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/tests/default-only": {
+      "get": {
+        "tags": [
+          "Homologação importador"
+        ],
+        "operationId": "testDefaultOnly",
+        "summary": "11 — Resposta exclusivamente default",
+        "description": "PROP-09. Resposta apenas default: sem responseBody e sem grupo de corpo de saída.",
+        "responses": {
+          "default": {
+            "description": "Resposta para inspeção do model de saída",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "fallbackDefault": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/tests/text-only": {
+      "post": {
+        "tags": [
+          "Homologação importador"
+        ],
+        "operationId": "testTextOnly",
+        "summary": "12 — Request e response text/plain",
+        "description": "PROP-09. Request escalar text/plain: sem inBody/requestBody; resposta text/plain também sem corpo projetado. Content-type presente sem default.",
+        "responses": {
+          "200": {
+            "description": "Resposta textual",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                },
+                "example": "OK"
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "text/plain": {
+              "schema": {
+                "type": "string"
+              },
+              "example": "mensagem de teste"
+            }
+          }
+        }
+      }
+    },
+    "/tests/request-media": {
+      "post": {
+        "tags": [
+          "Homologação importador"
+        ],
+        "operationId": "testRequestMedia",
+        "summary": "13 — Seleção de mídia do request",
+        "description": "PROP-09-R1. Primeira mídia escalar interrompe a seleção; requestBody ausente mesmo havendo objetos nas mídias seguintes. Content-type sem default.",
+        "responses": {
+          "200": {
+            "description": "Resposta para inspeção do model de saída",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "ok": {
+                      "type": "boolean"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "text/plain": {
+              "schema": {
+                "type": "string"
+              }
+            },
+            "application/vnd.test+json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "selectedRequestVendor": {
+                    "type": "string"
+                  }
+                }
+              }
+            },
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "selectedRequestJson": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "selectedRequestJson"
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    "/tests/order-and-content-type/{id}": {
+      "post": {
+        "tags": [
+          "Homologação importador"
+        ],
+        "operationId": "testOrderAndContentType",
+        "summary": "14 — Ordem, override e Content-Type",
+        "description": "PROP-09 / PROP-02 / MOD-05. Ordem zFilter, pageSize, aFilter, id em properties. Override interno é 25, mas nenhum default de pageSize é emitido. Content-type explícito preservado.",
+        "responses": {
+          "200": {
+            "description": "Resposta para inspeção do model de saída",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "ok": {
+                      "type": "boolean"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "message": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "zFilter",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "X-Zeta",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 25
+            }
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Content-Type",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "default": "application/json"
+            }
+          },
+          {
+            "name": "aFilter",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "X-Alpha",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
+      },
+      "parameters": [
+        {
+          "name": "pageSize",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "type": "integer",
+            "default": 10
+          }
+        }
+      ]
+    },
+    "/tests/no-body": {
+      "get": {
+        "tags": [
+          "Homologação importador"
+        ],
+        "operationId": "consolidatedCase15",
+        "summary": "15 — GET sem corpo",
+        "description": "PROP-07. Content-type presente sem default nos dois JSONs; sem requestBody/inBody. Credenciais globais aparecem pela regra PROP-08.",
+        "responses": {
+          "204": {
+            "description": "Sem conteúdo"
+          }
+        }
+      }
+    },
+    "/tests/explicit-headers": {
+      "post": {
+        "tags": [
+          "Homologação importador"
+        ],
+        "operationId": "consolidatedCase16",
+        "summary": "16 — Headers explícitos e normalização",
+        "description": "PROP-02 / PROP-05 / PROP-07 / PROP-08. Ordem X-Trace, Content-type, Accept, authorization, x-api-key preservada. Content-type único/required com application/custom; Accept explícito permanece; valores explícitos preservados em properties. Model não preenche default de Authorization por ser sensível.",
+        "responses": {
+          "200": {
+            "description": "Resposta para inspeção",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MediaA"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "in": "header",
+            "name": "X-Trace",
+            "schema": {
+              "type": "string",
+              "default": "trace-001"
+            }
+          },
+          {
+            "in": "header",
+            "name": "CONTENT-TYPE",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "default": "application/custom"
+            }
+          },
+          {
+            "in": "header",
+            "name": "Accept",
+            "schema": {
+              "type": "string",
+              "default": "application/custom"
+            }
+          },
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "default": "Bearer teste-explicito"
+            }
+          },
+          {
+            "in": "header",
+            "name": "x-api-key",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "default": "chave-explicita-de-teste"
+            }
+          }
+        ],
+        "security": []
+      }
+    },
+    "/tests/removals/{id}": {
+      "post": {
+        "tags": [
+          "Homologação importador"
+        ],
+        "operationId": "consolidatedCase17",
+        "summary": "17 — Limpeza de model e properties",
+        "description": "MOD-01 / MOD-02 / MOD-04 / MOD-05 / PROP-01..06. Sem metadados agregados de segurança, descrição de operação em properties, cookies, headers de resposta ou Accept automático. Defaults de PATH/QUERY/corpos ausentes; X-Explicit conserva 0. Defaults sensitive ausentes. Tipos, selects, labels, required e campos projetados preservados.",
+        "responses": {
+          "200": {
+            "description": "Descrição da resposta mantida",
+            "headers": {
+              "X-Rate-Limit": {
+                "schema": {
+                  "type": "integer"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProjectionSchema"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "description": "Descrição do PATH",
+            "schema": {
+              "type": "integer",
+              "default": 0
+            }
+          },
+          {
+            "in": "query",
+            "name": "page",
+            "description": "Descrição da query",
+            "deprecated": true,
+            "allowEmptyValue": true,
+            "allowReserved": true,
+            "style": "form",
+            "explode": false,
+            "schema": {
+              "type": "integer",
+              "enum": [
+                0,
+                25
+              ],
+              "default": 0,
+              "minimum": 0,
+              "maximum": 100
+            }
+          },
+          {
+            "in": "query",
+            "name": "filters",
+            "style": "form",
+            "explode": false,
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "default": [
+                "a"
+              ]
+            }
+          },
+          {
+            "in": "query",
+            "name": "byContent",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "boolean",
+                  "enum": [
+                    true,
+                    false
+                  ],
+                  "default": false
+                }
+              }
+            }
+          },
+          {
+            "in": "cookie",
+            "name": "session",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "X-Explicit",
+            "description": "Descrição do header",
+            "schema": {
+              "type": "integer",
+              "default": 0,
+              "minimum": 0
+            }
+          }
+        ],
+        "deprecated": true,
+        "security": [
+          {
+            "unusedBearer": [],
+            "unusedHeaderKey": [],
+            "queryKey": [],
+            "cookieKey": []
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProjectionSchema"
+              }
+            }
+          },
+          "description": "Descrição do request mantida"
+        }
+      }
+    },
+    "/tests/security-unused": {
+      "get": {
+        "tags": [
+          "Homologação importador"
+        ],
+        "operationId": "consolidatedCase18",
+        "summary": "18 — Schemes definidos sem security",
+        "description": "PROP-08 / PROP-06. Exatamente um Authorization e um X-API-Key gerados, sensíveis e sem default. Schemes query/cookie/OAuth/OpenID não utilizados não geram campos adicionais.",
+        "responses": {
+          "204": {
+            "description": "Sem conteúdo"
+          }
+        }
+      }
+    },
+    "/tests/security-empty": {
+      "get": {
+        "tags": [
+          "Homologação importador"
+        ],
+        "operationId": "consolidatedCase19",
+        "summary": "19 — Security explicitamente vazio",
+        "description": "PROP-08 / PROP-06. Mesmo resultado do caso anterior apesar de security: []. A regra de geração de headers é uma decisão de compatibilidade.",
+        "responses": {
+          "204": {
+            "description": "Sem conteúdo"
+          }
+        },
+        "security": []
+      }
+    },
+    "/tests/security-used": {
+      "get": {
+        "tags": [
+          "Homologação importador"
+        ],
+        "operationId": "consolidatedCase20",
+        "summary": "20 — Credenciais usadas e cookie removido",
+        "description": "PROP-05 / PROP-06 / PROP-08. Authorization e X-API-Key sensíveis sem default; queryCredential aparece como query sensível sem default. cookieCredential não aparece em model/properties. Sem security/restResourceSecurity agregados.",
+        "responses": {
+          "204": {
+            "description": "Sem conteúdo"
+          }
+        },
+        "security": [
+          {
+            "unusedBearer": [],
+            "unusedHeaderKey": [],
+            "queryKey": [],
+            "cookieKey": []
+          }
+        ]
+      }
+    },
+    "/tests/response-examples": {
+      "get": {
+        "tags": [
+          "Homologação importador"
+        ],
+        "operationId": "consolidatedCase21",
+        "summary": "21 — Exemplos de resposta e arrays heterogêneos",
+        "description": "MOD-06 / MOD-04. Properties projeta customField, enabled, count, rows.last e matrix com índices 0/1/2 do último item. Sem schemaOnly/rows.first/defaults. Model de saída oferece rows/matrix arrastáveis, sem fieldArray nem seus filhos editáveis.",
+        "responses": {
+          "200": {
+            "description": "Resposta para inspeção",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "schemaOnly": {
+                      "type": "string"
+                    }
+                  },
+                  "example": {
+                    "customField": "sample",
+                    "enabled": false,
+                    "count": 0,
+                    "rows": [
+                      {
+                        "first": "one"
+                      },
+                      {
+                        "last": "two"
+                      }
+                    ],
+                    "matrix": [
+                      [
+                        1,
+                        2
+                      ],
+                      [
+                        3,
+                        4,
+                        5
+                      ]
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/tests/request-examples": {
+      "post": {
+        "tags": [
+          "Homologação importador"
+        ],
+        "operationId": "consolidatedCase22",
+        "summary": "22 — Exemplo aninhado e exemplos ignorados",
+        "description": "MOD-06. Ignorar ignoredRoot e ignoredMedia. Em payload, projetar customField/enabled/count sem schemaOnly e sem defaults. Exemplos de mídia não substituem o schema.",
+        "responses": {
+          "204": {
+            "description": "Sem conteúdo"
+          }
+        },
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "example": {
+                  "ignoredRoot": true
+                },
+                "properties": {
+                  "payload": {
+                    "type": "object",
+                    "example": {
+                      "customField": "sample",
+                      "enabled": false,
+                      "count": 0
+                    },
+                    "properties": {
+                      "schemaOnly": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              },
+              "example": {
+                "ignoredMedia": true
+              }
+            }
+          }
+        }
+      }
+    },
+    "/tests/allof-oneOf": {
+      "post": {
+        "tags": [
+          "Homologação importador"
+        ],
+        "operationId": "consolidatedCase23",
+        "summary": "23 — AllOf com primeira variante oneOf",
+        "description": "MOD-06 / required. Projetar somente id e name. Não projetar other. Name mantém required condicional e os metadados de composição permanecem.",
+        "responses": {
+          "204": {
+            "description": "Sem conteúdo"
+          }
+        },
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "string"
+                      }
+                    }
+                  },
+                  {
+                    "oneOf": [
+                      {
+                        "type": "object",
+                        "required": [
+                          "name"
+                        ],
+                        "properties": {
+                          "name": {
+                            "type": "string"
+                          }
+                        }
+                      },
+                      {
+                        "type": "object",
+                        "properties": {
+                          "other": {
+                            "type": "string"
+                          }
+                        }
+                      }
+                    ]
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    "/tests/allof-anyOf": {
+      "post": {
+        "tags": [
+          "Homologação importador"
+        ],
+        "operationId": "consolidatedCase24",
+        "summary": "24 — AllOf com primeira variante anyOf",
+        "description": "MOD-06 / required. Projetar somente id e name. Não projetar other. Name mantém required condicional e os metadados de composição permanecem.",
+        "responses": {
+          "204": {
+            "description": "Sem conteúdo"
+          }
+        },
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "string"
+                      }
+                    }
+                  },
+                  {
+                    "anyOf": [
+                      {
+                        "type": "object",
+                        "required": [
+                          "name"
+                        ],
+                        "properties": {
+                          "name": {
+                            "type": "string"
+                          }
+                        }
+                      },
+                      {
+                        "type": "object",
+                        "properties": {
+                          "other": {
+                            "type": "string"
+                          }
+                        }
+                      }
+                    ]
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    "/tests/created-only": {
+      "get": {
+        "tags": [
+          "Homologação importador"
+        ],
+        "operationId": "consolidatedCase25",
+        "summary": "25 — Resposta somente 201",
+        "description": "PROP-09. Selecionar 201 quando 200 não existe; responseBody contém fieldA.",
+        "responses": {
+          "201": {
+            "description": "Resposta para inspeção",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MediaA"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/tests/200-text-201-json": {
+      "get": {
+        "tags": [
+          "Homologação importador"
+        ],
+        "operationId": "consolidatedCase26",
+        "summary": "26 — 200 sem JSON bloqueia 201",
+        "description": "PROP-09. Sem responseBody: 200 existe mas é text/plain. Não usar JSON de 201 como fallback.",
+        "responses": {
+          "200": {
+            "description": "Resposta para inspeção",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "Resposta para inspeção",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MediaA"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/tests/vendor-json-only": {
+      "get": {
+        "tags": [
+          "Homologação importador"
+        ],
+        "operationId": "consolidatedCase27",
+        "summary": "27 — Vendor +json isolado",
+        "description": "PROP-09. Sem corpo de resposta: application/vnd.test+json isolado não contém application/json.",
+        "responses": {
+          "200": {
+            "description": "Resposta para inspeção",
+            "content": {
+              "application/vnd.test+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MediaA"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/tests/last-json-response": {
+      "get": {
+        "tags": [
+          "Homologação importador"
+        ],
+        "operationId": "consolidatedCase28",
+        "summary": "28 — Última mídia JSON e caixa diferente",
+        "description": "PROP-09. Selecionar APPLICATION/JSON; charset=UTF-8 e projetar last, sem first nem fieldB. Vendor +json/text/plain posteriores não substituem a seleção.",
+        "responses": {
+          "200": {
+            "description": "Resposta para inspeção",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MediaFirst"
+                }
+              },
+              "APPLICATION/JSON; charset=UTF-8": {
+                "schema": {
+                  "$ref": "#/components/schemas/MediaLast"
+                }
+              },
+              "application/vnd.test+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MediaB"
+                }
+              },
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/tests/request-scalar-object": {
+      "post": {
+        "tags": [
+          "Homologação importador"
+        ],
+        "operationId": "consolidatedCase29",
+        "summary": "29 — Escalar antes de objeto",
+        "description": "PROP-09 / PROP-09-R1. Sem corpo e sem default no Content-type.",
+        "responses": {
+          "204": {
+            "description": "Sem conteúdo"
+          }
+        },
+        "requestBody": {
+          "content": {
+            "text/plain": {
+              "schema": {
+                "type": "string"
+              }
+            },
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MediaA"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/tests/request-object-scalar": {
+      "post": {
+        "tags": [
+          "Homologação importador"
+        ],
+        "operationId": "consolidatedCase30",
+        "summary": "30 — Objeto antes de escalar",
+        "description": "PROP-09 / PROP-09-R1. Preservar fieldA e requestBody.mediaType application/json; Content-type em properties mantém application/json.",
+        "responses": {
+          "204": {
+            "description": "Sem conteúdo"
+          }
+        },
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MediaA"
+              }
+            },
+            "text/plain": {
+              "schema": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/tests/request-object-scalar-object": {
+      "post": {
+        "tags": [
+          "Homologação importador"
+        ],
+        "operationId": "consolidatedCase31",
+        "summary": "31 — Objeto A, escalar, objeto B",
+        "description": "PROP-09 / PROP-09-R1. Preservar fieldA/application/json. Não projetar fieldB nem selecionar application/xml.",
+        "responses": {
+          "204": {
+            "description": "Sem conteúdo"
+          }
+        },
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MediaA"
+              }
+            },
+            "text/plain": {
+              "schema": {
+                "type": "string"
+              }
+            },
+            "application/xml": {
+              "schema": {
+                "$ref": "#/components/schemas/MediaB"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/tests/request-objects-a-b": {
+      "post": {
+        "tags": [
+          "Homologação importador"
+        ],
+        "operationId": "consolidatedCase32",
+        "summary": "32 — Objeto A antes de B",
+        "description": "PROP-09 / PROP-09-R1. Selecionar fieldB/application/xml, a última mídia de objeto.",
+        "responses": {
+          "204": {
+            "description": "Sem conteúdo"
+          }
+        },
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MediaA"
+              }
+            },
+            "application/xml": {
+              "schema": {
+                "$ref": "#/components/schemas/MediaB"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/tests/request-objects-b-a": {
+      "post": {
+        "tags": [
+          "Homologação importador"
+        ],
+        "operationId": "consolidatedCase33",
+        "summary": "33 — Objeto B antes de A",
+        "description": "PROP-09 / PROP-09-R1. Selecionar fieldA/application/json, a última mídia de objeto.",
+        "responses": {
+          "204": {
+            "description": "Sem conteúdo"
+          }
+        },
+        "requestBody": {
+          "content": {
+            "application/xml": {
+              "schema": {
+                "$ref": "#/components/schemas/MediaB"
+              }
+            },
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MediaA"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/tests/request-array-scalar": {
+      "post": {
+        "tags": [
+          "Homologação importador"
+        ],
+        "operationId": "consolidatedCase34",
+        "summary": "34 — Array antes de escalar",
+        "description": "PROP-09 / PROP-09-R1. Preservar array de entrada items/application/json; não selecionar fieldB.",
+        "responses": {
+          "204": {
+            "description": "Sem conteúdo"
+          }
+        },
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            },
+            "text/plain": {
+              "schema": {
+                "type": "string"
+              }
+            },
+            "application/xml": {
+              "schema": {
+                "$ref": "#/components/schemas/MediaB"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/tests/multipart-metadata": {
+      "post": {
+        "tags": [
+          "Homologação importador"
+        ],
+        "operationId": "consolidatedCase35",
+        "summary": "35 — Multipart, binário e headers de partes",
+        "description": "MOD-02 / PROP-03 / preservação. Preservar mediaType multipart/form-data, file.format=binary, binary, encodings e header de parte X-Part=attachment em properties. Formato não gera templateOptions.type=file/date/email. Campos mantêm labels/required/enums, sem defaults de corpo.",
+        "responses": {
+          "200": {
+            "description": "Resposta para inspeção",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProjectionSchema"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/ProjectionSchema"
+              },
+              "encoding": {
+                "file": {
+                  "contentType": "application/octet-stream",
+                  "headers": {
+                    "X-Part": {
+                      "schema": {
+                        "type": "string",
+                        "enum": [
+                          "attachment"
+                        ],
+                        "default": "attachment"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "description": "Upload para mock"
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "PixPayment": {
+        "type": "object",
+        "properties": {
+          "method": {
+            "type": "string",
+            "enum": [
+              "PIX"
+            ]
+          },
+          "pixKey": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "method",
+          "pixKey"
+        ]
+      },
+      "CardPayment": {
+        "type": "object",
+        "properties": {
+          "method": {
+            "type": "string",
+            "enum": [
+              "CARD"
+            ]
+          },
+          "cardToken": {
+            "type": "string"
+          },
+          "installments": {
+            "type": "integer",
+            "minimum": 1
+          }
+        },
+        "required": [
+          "method",
+          "cardToken"
+        ]
+      },
+      "MediaA": {
+        "type": "object",
+        "properties": {
+          "fieldA": {
+            "type": "string"
+          }
+        }
+      },
+      "MediaB": {
+        "type": "object",
+        "properties": {
+          "fieldB": {
+            "type": "string"
+          }
+        }
+      },
+      "MediaFirst": {
+        "type": "object",
+        "properties": {
+          "first": {
+            "type": "string"
+          }
+        }
+      },
+      "MediaLast": {
+        "type": "object",
+        "properties": {
+          "last": {
+            "type": "boolean"
+          }
+        }
+      },
+      "ProjectionSchema": {
+        "type": "object",
+        "required": [
+          "statusCode"
+        ],
+        "properties": {
+          "statusCode": {
+            "type": "string",
+            "description": "Descrição mantida em properties",
+            "enum": [
+              "OPEN",
+              "CLOSED"
+            ],
+            "default": "CLOSED",
+            "minLength": 1,
+            "maxLength": 10,
+            "pattern": "[A-Z]+",
+            "nullable": true,
+            "deprecated": true
+          },
+          "eventTime": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "contactEmail": {
+            "type": "string",
+            "format": "email"
+          },
+          "file": {
+            "type": "string",
+            "format": "binary"
+          },
+          "optionalObject": {
+            "type": "object",
+            "required": [
+              "enabled"
+            ],
+            "properties": {
+              "enabled": {
+                "type": "boolean",
+                "default": false
+              },
+              "count": {
+                "type": "integer",
+                "default": 0
+              }
+            }
+          },
+          "rows": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 5,
+            "uniqueItems": true,
+            "items": {
+              "type": "object",
+              "required": [
+                "name"
+              ],
+              "properties": {
+                "name": {
+                  "type": "string",
+                  "default": "example"
+                },
+                "secret": {
+                  "type": "string",
+                  "writeOnly": true
+                }
+              }
+            }
+          },
+          "values": {
+            "type": "array",
+            "default": [
+              0
+            ],
+            "items": {
+              "type": "integer",
+              "default": 0
+            }
+          },
+          "dictionary": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            }
+          },
+          "payment": {
+            "oneOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "pixKey": {
+                    "type": "string",
+                    "default": "removed"
+                  }
+                }
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "cardToken": {
+                    "type": "string"
+                  }
+                }
+              }
+            ]
+          },
+          "dynamic": {
+            "type": "object",
+            "additionalProperties": true
+          },
+          "secret": {
+            "type": "string",
+            "writeOnly": true
+          },
+          "nested": {
+            "type": "object",
+            "properties": {
+              "secret": {
+                "type": "string",
+                "writeOnly": true
+              }
+            }
+          },
+          "id": {
+            "type": "string",
+            "readOnly": true
+          }
+        }
+      }
+    },
+    "securitySchemes": {
+      "unusedBasic": {
+        "type": "http",
+        "scheme": "basic"
+      },
+      "unusedBearer": {
+        "type": "http",
+        "scheme": "bearer"
+      },
+      "unusedHeaderKey": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "X-API-Key"
+      },
+      "queryKey": {
+        "type": "apiKey",
+        "in": "query",
+        "name": "queryCredential"
+      },
+      "cookieKey": {
+        "type": "apiKey",
+        "in": "cookie",
+        "name": "cookieCredential"
+      },
+      "unusedOAuth": {
+        "type": "oauth2",
+        "flows": {
+          "clientCredentials": {
+            "tokenUrl": "https://example.invalid/oauth/token",
+            "scopes": {
+              "read": "Leitura"
+            }
+          }
+        }
+      },
+      "unusedOpenId": {
+        "type": "openIdConnect",
+        "openIdConnectUrl": "https://example.invalid/.well-known/openid-configuration"
+      }
+    }
+  }
+}
