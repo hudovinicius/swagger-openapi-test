@@ -1,0 +1,34 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "API de Teste Mínima",
+    "version": "1.0.0",
+    "description": "API simplificada sem parâmetros para testes de importação de especificações Swagger/OpenAPI."
+  },
+  "paths": {
+    "/ping": {
+      "get": {
+        "summary": "Verifica status do serviço",
+        "description": "Endpoint básico para teste de importação.",
+        "responses": {
+          "200": {
+            "description": "Serviço ativo",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "example": "ok"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
