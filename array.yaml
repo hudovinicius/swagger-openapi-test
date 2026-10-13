@@ -1,0 +1,61 @@
+openapi: 3.0.3
+
+info:
+  title: API de Unidades de Medida
+  version: 1.0.0
+
+paths:
+  /unidades-medida:
+    post:
+      tags:
+        - Unidades de Medida
+      summary: Criar unidades de medida em lote
+      description: Recebe uma lista de unidades de medida e retorna a lista criada.
+      operationId: criarUnidadesMedida
+
+      requestBody:
+        required: true
+        description: Lista de unidades de medida que serão cadastradas.
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/UnidadeMedida'
+            example:
+              - codigo: UN
+                descricao: Unidade
+              - codigo: KG
+                descricao: Quilograma
+
+      responses:
+        '200':
+          description: Lista de unidades de medida cadastradas.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/UnidadeMedida'
+              example:
+                - codigo: UN
+                  descricao: Unidade
+                - codigo: KG
+                  descricao: Quilograma
+
+components:
+  schemas:
+    UnidadeMedida:
+      type: object
+      required:
+        - codigo
+        - descricao
+      properties:
+        codigo:
+          type: string
+          description: Código da unidade de medida.
+          example: UN
+        descricao:
+          type: string
+          description: Nome da unidade de medida.
+          example: Unidade
